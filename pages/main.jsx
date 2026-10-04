@@ -33,11 +33,11 @@ import 'bootstrap/dist/css/bootstrap-grid.min.css';
 import '../styles.css';
 
 const siteLinks = [
-  ['Home', 'index.html'],
-  ['Events', 'event.html'],
-  ['Blog', 'blog.html'],
-  ['About Us', 'about-us.html'],
-  ['Contact', 'contact-us.html'],
+  ['Home', '/'],
+  ['Events', '/event'],
+  ['Blog', '/blog'],
+  ['About Us', '/about-us'],
+  ['Contact', '/contact-us'],
 ];
 
 
@@ -65,15 +65,23 @@ function Icon({ name, size = 27 }) {
   return <Component size={size} aria-hidden="true" />;
 }
 
+// The site uses clean addresses (/blog, /admin). Turns any address into a page name, accepting the older .html
+// form too: "/", "/index.html" → "index"; "/blog" or "/blog.html" → "blog".
 function getPageName(pathname) {
-  return pathname.split('/').filter(Boolean).pop() || 'index.html';
+  const last = pathname.split('/').filter(Boolean).pop() ?? '';
+  return last.replace(/\.html$/, '') || 'index';
 }
 
+function pageHref(page) {
+  return page === 'index' ? '/' : `/${page}`;
+}
+
+// Which menu item to underline: articles belong to Blog, Governance to About Us.
 function getActiveNavigationHref(pathname) {
   const page = getPageName(pathname);
-  if (page === 'article.html') return 'blog.html';
-  if (page === 'governance.html') return 'about-us.html';
-  return page;
+  if (page === 'article') return '/blog';
+  if (page === 'governance') return '/about-us';
+  return pageHref(page);
 }
 
 const COMPACT_QUERY = '(width <= 920px)';
@@ -261,7 +269,7 @@ function Header() {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
-  const ctaHref = 'about-us.html#get-involved';
+  const ctaHref = '/about-us#get-involved';
 
   return (
     <motion.header
@@ -274,7 +282,7 @@ function Header() {
         transition={{ type: 'spring', stiffness: 320, damping: 36, mass: 0.9 }}
       >
         <div className="container nav-wrap">
-          <a href="index.html" className="brand" aria-label="Mind Over Matter home">
+          <a href="/" className="brand" aria-label="Mind Over Matter home">
             <span className="brand-mark"><img src={logoEmblem} alt="" width="40" height="40" /></span>
             <span>Mind Over Matter</span>
           </a>
@@ -375,7 +383,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <a href="index.html" className="brand footer-logo" aria-label="Mind Over Matter home">
+          <a href="/" className="brand footer-logo" aria-label="Mind Over Matter home">
             <span className="brand-mark"><img src={logoEmblem} alt="" width="40" height="40" loading="lazy" /></span>
             <span>Mind Over Matter</span>
           </a>
@@ -411,11 +419,11 @@ function Footer() {
         <div className="footer-column">
           <h2>The club</h2>
           <ul>
-            <li><a className="footer-link" href="about-us.html#get-involved">Get involved</a></li>
-            <li><a className="footer-link" href="governance.html">Executive Committee</a></li>
-            <li><a className="footer-link" href="governance.html">Class Representative Council</a></li>
+            <li><a className="footer-link" href="/about-us#get-involved">Get involved</a></li>
+            <li><a className="footer-link" href="/governance">Executive Committee</a></li>
+            <li><a className="footer-link" href="/governance">Class Representative Council</a></li>
             <li><a className="footer-link" href={articlesPdf} download>Articles of Association (PDF)</a></li>
-            <li><a className="footer-link" href="privacy.html" aria-current={activeHref === 'privacy.html' ? 'page' : undefined}>Privacy policy</a></li>
+            <li><a className="footer-link" href="/privacy" aria-current={activeHref === '/privacy' ? 'page' : undefined}>Privacy policy</a></li>
           </ul>
         </div>
 
@@ -599,7 +607,7 @@ function PostCard({ post }) {
           <span><Clock size={14} aria-hidden="true" />{post.readTime}</span>
         </div>
         <div className="post-meta">
-          <a href={`article.html?slug=${post.slug}`} className="text-link">Read article <ArrowRight size={17} aria-hidden="true" /></a>
+          <a href={`/article?slug=${post.slug}`} className="text-link">Read article <ArrowRight size={17} aria-hidden="true" /></a>
         </div>
       </div>
     </article>
@@ -619,7 +627,7 @@ function PostRow({ post }) {
         <h3>{post.title}</h3>
         <p>{post.excerpt}</p>
       </div>
-      <a className="read-more" href={`article.html?slug=${post.slug}`}>Read article <ArrowRight size={17} aria-hidden="true" /></a>
+      <a className="read-more" href={`/article?slug=${post.slug}`}>Read article <ArrowRight size={17} aria-hidden="true" /></a>
     </article>
   );
 }
@@ -639,8 +647,8 @@ function HomePage() {
             <motion.h1 variants={introItemVariants}>A community where mental health matters.</motion.h1>
             <motion.p className="lede" variants={introItemVariants}>Mind Over Matter is a student-led club building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
             <motion.div className="hero-actions" variants={introItemVariants}>
-              <a href="about-us.html#get-involved" className="button button-primary">Join the club <ArrowRight size={17} aria-hidden="true" /></a>
-              <a href="event.html#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
+              <a href="/about-us#get-involved" className="button button-primary">Join the club <ArrowRight size={17} aria-hidden="true" /></a>
+              <a href="/event#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
             </motion.div>
             <motion.ul className="hero-stats" aria-label="Club at a glance" variants={introItemVariants}>
               <li><CountUp value={programs.length} /><span>core programs</span></li>
@@ -701,8 +709,8 @@ function HomePage() {
             {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
           </div>
           <div className="hero-actions">
-            <a href="event.html#programs" className="button button-primary">Explore programs & services <ArrowRight size={17} aria-hidden="true" /></a>
-            <a href="about-us.html" className="button button-ghost">Our mission & values <ArrowUpRight size={17} aria-hidden="true" /></a>
+            <a href="/event#programs" className="button button-primary">Explore programs & services <ArrowRight size={17} aria-hidden="true" /></a>
+            <a href="/about-us" className="button button-ghost">Our mission & values <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
       </section>
@@ -780,7 +788,7 @@ function PageHero({ eyebrow, title, lede }) {
 function ArchivePage() {
   const { posts, status } = usePosts();
   const [search, setSearch] = useState('');
-  // A category can be chosen by link too, e.g. blog.html?category=coping-skills (used on article pages).
+  // A category can be chosen by link too, e.g. /blog?category=coping-skills (used on article pages).
   const [category, setCategory] = useState(() => {
     const requested = new URLSearchParams(window.location.search).get('category');
     return categories.includes(requested) ? requested : 'all';
@@ -895,7 +903,7 @@ function ArticlePage() {
                 <p className="eyebrow">Blog</p>
                 <h1>{status === 'error' ? 'We couldn’t load this article.' : 'Article not found.'}</h1>
                 <p className="lede">It may have been removed, or the link may be incorrect.</p>
-                <div className="hero-actions"><a href="blog.html" className="button button-primary">Browse the blog <ArrowRight size={17} aria-hidden="true" /></a></div>
+                <div className="hero-actions"><a href="/blog" className="button button-primary">Browse the blog <ArrowRight size={17} aria-hidden="true" /></a></div>
               </>
             )}
           </div>
@@ -908,7 +916,7 @@ function ArticlePage() {
     <PageLayout pageClass="article-page">
       <article className="article-shell">
         <div className="article-top">
-          <p className="eyebrow"><a href={`blog.html?category=${post.category}`}>{categoryLabel(post.category)}</a></p>
+          <p className="eyebrow"><a href={`/blog?category=${post.category}`}>{categoryLabel(post.category)}</a></p>
           <h1>{post.title}</h1>
           <div className="article-meta"><span>{post.author}</span><span>{post.date}</span><span>{post.readTime}</span></div>
         </div>
@@ -917,7 +925,7 @@ function ArticlePage() {
           <RichText text={post.body ?? post.content.join('\n\n')} />
         </div>
         <div className="article-footer">
-          <a href="blog.html" className="text-link"><ArrowLeft size={16} aria-hidden="true" /> All articles</a>
+          <a href="/blog" className="text-link"><ArrowLeft size={16} aria-hidden="true" /> All articles</a>
         </div>
       </article>
     </PageLayout>
@@ -1012,7 +1020,7 @@ function EventsPage() {
             {impact.map((item) => <article className="about-card" key={item.title}><span className="journal-tag">Impact</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
           </div>
           <div className="hero-actions">
-            <a href="contact-us.html?topic=counselling" className="button button-primary">Book a peer counselling session <ArrowRight size={17} aria-hidden="true" /></a>
+            <a href="/contact-us?topic=counselling" className="button button-primary">Book a peer counselling session <ArrowRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
       </section>
@@ -1092,7 +1100,7 @@ function AboutPage() {
             {logoSymbolism.map((item) => <FeatureCard key={item.name} title={item.name} text={item.text} icon="sprout" />)}
           </div>
           <div className="hero-actions">
-            <a href="governance.html" className="button button-ghost">How the club is run <ArrowUpRight size={17} aria-hidden="true" /></a>
+            <a href="/governance" className="button button-ghost">How the club is run <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
       </section>
@@ -1107,7 +1115,7 @@ function AboutPage() {
           {waysToJoin.map((item) => <FeatureCard key={item.title} {...item} />)}
         </div>
         <div className="hero-actions">
-          <a href="contact-us.html" className="button button-primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></a>
+          <a href="/contact-us" className="button button-primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></a>
         </div>
       </div></section>
 
@@ -1126,7 +1134,7 @@ function AboutPage() {
         <div>
           <p className="lede">Executive Committee positions are filled through nomination, which may be opened to all members, with approval by the existing committee. Every medical class, Year 1 through Year 6, also has its own class representative.</p>
           <div className="hero-actions">
-            <a href="governance.html" className="button button-ghost">See all roles <ArrowUpRight size={17} aria-hidden="true" /></a>
+            <a href="/governance" className="button button-ghost">See all roles <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
       </div></section>
@@ -1179,7 +1187,7 @@ function GovernancePage() {
   );
 }
 
-// Links can preselect the topic, e.g. contact-us.html?topic=counselling.
+// Links can preselect the topic, e.g. /contact-us?topic=counselling.
 const topicFromLink = {
   counselling: 'Peer counselling',
   membership: 'Membership',
@@ -1245,7 +1253,7 @@ function ContactPage() {
           <label className="contact-trap" aria-hidden="true">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <p className="contact-privacy">
             <LockKey className="contact-privacy-icon" size={16} aria-hidden="true" />
-            <span>Only the Mind Over Matter committee can read messages. See our <a className="article-link" href="privacy.html">privacy policy</a>.</span>
+            <span>Only the Mind Over Matter committee can read messages. See our <a className="article-link" href="/privacy">privacy policy</a>.</span>
           </p>
           <button type="submit" className="button button-primary" disabled={busy}>{busy ? 'Sending…' : 'Send message'}</button>
           <p className={`form-status ${status.type}`} aria-live="polite">{status.text}</p>
@@ -1790,7 +1798,7 @@ function PostsManager({ editing, onEdit }) {
               <span>{categoryLabel(post.category)} · {post.date}{post.updatedAt ? ' · edited' : ''}</span>
             </div>
             <div className="dashboard-row-actions">
-              <a className="button button-ghost button-small" href={`article.html?slug=${post.slug}`} target="_blank" rel="noopener noreferrer"><Eye size={15} aria-hidden="true" /> View</a>
+              <a className="button button-ghost button-small" href={`/article?slug=${post.slug}`} target="_blank" rel="noopener noreferrer"><Eye size={15} aria-hidden="true" /> View</a>
               <button type="button" className="button button-ghost button-small" onClick={() => onEdit(post)}><PencilSimple size={15} aria-hidden="true" /> Edit</button>
               <DeleteControl onDelete={() => handleDelete(post)} />
             </div>
@@ -2223,10 +2231,10 @@ function NotFoundPage() {
           <motion.h1 variants={introItemVariants}>We couldn’t find that page.</motion.h1>
           <motion.p className="lede" variants={introItemVariants}>The link may be broken, or the page may have moved. Try one of these instead:</motion.p>
           <motion.div className="hero-actions" variants={introItemVariants}>
-            <a href="index.html" className="button button-primary">Go to the home page <ArrowRight size={17} aria-hidden="true" /></a>
-            <a href="event.html" className="button button-ghost">Events & programs</a>
-            <a href="blog.html" className="button button-ghost">Blog</a>
-            <a href="contact-us.html" className="button button-ghost">Contact us</a>
+            <a href="/" className="button button-primary">Go to the home page <ArrowRight size={17} aria-hidden="true" /></a>
+            <a href="/event" className="button button-ghost">Events & programs</a>
+            <a href="/blog" className="button button-ghost">Blog</a>
+            <a href="/contact-us" className="button button-ghost">Contact us</a>
           </motion.div>
         </motion.div>
       </section>
@@ -2287,15 +2295,15 @@ function PrivacyPage() {
 }
 
 const pageTitles = {
-  'index.html': 'Mind Over Matter | Kenyatta University Mental Health Club',
-  'event.html': 'Events & Programs | Mind Over Matter',
-  'blog.html': 'Blog | Mind Over Matter',
-  'article.html': 'Mind Over Matter | Article',
-  'about-us.html': 'About Us | Mind Over Matter',
-  'governance.html': 'Governance | Mind Over Matter',
-  'contact-us.html': 'Contact Us | Mind Over Matter',
-  'privacy.html': 'Privacy Policy | Mind Over Matter',
-  'admin.html': 'Admin | Mind Over Matter',
+  'index': 'Mind Over Matter | Kenyatta University Mental Health Club',
+  'event': 'Events & Programs | Mind Over Matter',
+  'blog': 'Blog | Mind Over Matter',
+  'article': 'Mind Over Matter | Article',
+  'about-us': 'About Us | Mind Over Matter',
+  'governance': 'Governance | Mind Over Matter',
+  'contact-us': 'Contact Us | Mind Over Matter',
+  'privacy': 'Privacy Policy | Mind Over Matter',
+  'admin': 'Admin | Mind Over Matter',
 };
 
 const NOT_FOUND_TITLE = 'Page not found | Mind Over Matter';
@@ -2350,7 +2358,7 @@ function App() {
     pathname: window.location.pathname,
     search: window.location.search,
   }));
-  const page = route.pathname.split('/').pop() || 'index.html';
+  const page = getPageName(route.pathname);
   useScrollReveal();
 
   // Content is rendered by JavaScript, so the browser's own jump-to-hash on load finds nothing.
@@ -2381,14 +2389,11 @@ function App() {
       if (!anchor || anchor.hasAttribute('download') || (anchor.target && anchor.target !== '_self')) return;
 
       const url = new URL(anchor.href, window.location.href);
-      const pageName = url.pathname.split('/').pop() || 'index.html';
+      const pageName = getPageName(url.pathname);
       if (url.origin !== window.location.origin || !Object.hasOwn(pageTitles, pageName)) return;
 
-      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-      const targetPath = url.pathname.replace(/\/+$/, '') || '/';
-      const isSamePage = currentPath === targetPath ||
-        ((currentPath === '/' || currentPath === '/index.html') &&
-          (targetPath === '/' || targetPath === '/index.html'));
+      // "/blog" and "/blog.html" (or "/" and "/index.html") are the same page.
+      const isSamePage = pageName === getPageName(window.location.pathname);
 
       if (isSamePage && url.search === window.location.search) {
         event.preventDefault();
@@ -2422,15 +2427,15 @@ function App() {
   }, [page]);
 
   const routes = {
-    'index.html': HomePage,
-    'event.html': EventsPage,
-    'blog.html': ArchivePage,
-    'article.html': ArticlePage,
-    'about-us.html': AboutPage,
-    'governance.html': GovernancePage,
-    'contact-us.html': ContactPage,
-    'privacy.html': PrivacyPage,
-    'admin.html': AdminPage,
+    'index': HomePage,
+    'event': EventsPage,
+    'blog': ArchivePage,
+    'article': ArticlePage,
+    'about-us': AboutPage,
+    'governance': GovernancePage,
+    'contact-us': ContactPage,
+    'privacy': PrivacyPage,
+    'admin': AdminPage,
   };
   const PageComponent = routes[page] ?? NotFoundPage;
   const content = <PageComponent />;

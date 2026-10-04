@@ -44,6 +44,9 @@ const SHARE_IMAGE = '/og-image.png';
 // Pages search engines should not list.
 const PRIVATE_PAGES = new Set(['admin.html', '404.html']);
 
+// Vercel serves pages without .html (see vercel.json), so links and the sitemap use that form.
+const cleanPath = (page) => (page === 'index.html' ? '/' : `/${page.replace(/\.html$/, '')}`);
+
 const escapeAttribute = (value) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 // Adds social-share (Open Graph / Twitter) and canonical tags to every page from its own <title> and description,
@@ -55,7 +58,7 @@ function siteMeta(pageNames) {
       const page = context.path.split('/').pop() || 'index.html';
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? SITE_NAME;
       const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
-      const pageUrl = SITE_URL ? `${SITE_URL}/${page === 'index.html' ? '' : page}` : '';
+      const pageUrl = SITE_URL ? `${SITE_URL}${cleanPath(page)}` : '';
       const tags = [
         ['og:type', 'website'],
         ['og:site_name', SITE_NAME],
@@ -72,7 +75,7 @@ function siteMeta(pageNames) {
       return html.replace('</title>', `</title>\n    ${tags.join('\n    ')}`);
     },
     generateBundle() {
-      const robots = ['User-agent: *', 'Disallow: /admin.html'];
+      const robots = ['User-agent: *', 'Disallow: /admin', 'Disallow: /admin.html'];
       if (SITE_URL) robots.push('', `Sitemap: ${SITE_URL}/sitemap.xml`);
       this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `${robots.join('\n')}\n` });
 
@@ -82,7 +85,7 @@ function siteMeta(pageNames) {
       }
       const urls = pageNames
         .filter((page) => !PRIVATE_PAGES.has(page) && page !== 'article.html')
-        .map((page) => `  <url><loc>${SITE_URL}/${page === 'index.html' ? '' : page}</loc></url>`);
+        .map((page) => `  <url><loc>${SITE_URL}${cleanPath(page)}</loc></url>`);
       this.emitFile({
         type: 'asset',
         fileName: 'sitemap.xml',
