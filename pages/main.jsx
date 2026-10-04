@@ -8,6 +8,8 @@ import {
   UsersThree, WhatsappLogo, X, XLogo,
 } from './icons.jsx';
 import { AnimatePresence, MotionConfig, motion, useMotionValueEvent, useScroll } from 'motion/react';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { posts as samplePosts } from '../data/posts.js';
 import {
   blogCategories, categories, categoryLabel, compressCover, createEvent, createPost, describeError, eventTypes, fetchEvents, fetchPosts,
@@ -2250,6 +2252,7 @@ function PrivacyPage() {
             <li><strong>Emails you send us:</strong> whatever you include in them.</li>
           </ul>
           <p>Browsing the site does not require an account. We do not use advertising or tracking cookies, and we do not sell or share your information for marketing.</p>
+          <p>To learn which pages are useful and how quickly the site loads, we use Vercel Web Analytics and Speed Insights. They count visits anonymously and in total (for example, page views, country, and device type), without cookies and without identifying you.</p>
 
           <h2>Why we collect it</h2>
           <p>We use your details only to read and reply to your message, for example to arrange peer counselling, answer a question, or follow up on a partnership. We rely on your consent, which you give by sending the message.</p>
@@ -2330,6 +2333,11 @@ class ErrorBoundary extends Component {
   render() {
     return this.state.failed ? <LoadErrorScreen /> : this.props.children;
   }
+}
+
+// Keeps the admin dashboard out of the site statistics, so committee members' own visits don't count.
+function skipAdminPages(event) {
+  return event.url?.includes('/admin') ? null : event;
 }
 
 function scrollToTarget(url) {
@@ -2435,6 +2443,9 @@ function App() {
           <ErrorBoundary key={page}>{content}</ErrorBoundary>
         </SiteDataProvider>
       </IconContext.Provider>
+      {/* Vercel visitor and page-speed statistics (anonymous, no cookies). Admin visits are left out. */}
+      <Analytics beforeSend={skipAdminPages} />
+      <SpeedInsights route={`/${page}`} beforeSend={skipAdminPages} />
     </MotionConfig>
   );
 }
