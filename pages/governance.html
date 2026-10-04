@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="How Mind Over Matter is governed: the Executive Committee, class representatives, appointments, voting, and our Articles of Association." />
+    <meta name="theme-color" content="#eff5f6" />
+    <link rel="icon" type="image/png" href="../assets/images/logo/favicon.png" />
+    <link rel="apple-touch-icon" href="../assets/images/logo/apple-touch-icon.png" />
+    <title>Governance | Mind Over Matter</title>
+    <style>
+      /* Boot loader: inline so it works before the site's CSS and JavaScript have loaded. */
+      .boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background:
+          repeating-linear-gradient(132deg, transparent 0 34px, rgb(255 255 255 / 7%) 34px 35px),
+          linear-gradient(112deg, #053b2c 0%, #0b6b50 20%, #1bb184 38%, #0a5c45 52%, #04301f 68%, #12936a 86%, #053b2c 100%);
+        background-size: 100% 100%, 260% 100%;
+        font-family: "DM Sans Variable", "Segoe UI", system-ui, sans-serif;
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        animation: boot-show 0.3s ease 0.4s forwards, boot-sweep 1.8s ease-in-out 0.4s infinite alternate;
+      }
+      .boot-loader-content { display: grid; justify-items: center; gap: 1rem; max-width: 22rem; }
+      .boot-loader-mark {
+        display: grid;
+        place-items: center;
+        width: 4rem;
+        height: 4rem;
+        overflow: hidden;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 0 6px rgb(241 255 216 / 25%), 0 8px 24px rgb(22 63 50 / 25%);
+      }
+      .boot-loader strong,
+      .boot-loader-slow {
+        color: #f5f9f9;
+        text-shadow: 0 1px 14px rgb(22 63 50 / 60%);
+      }
+      .boot-loader strong { font-family: "Fraunces Variable", Georgia, serif; font-size: 1.5rem; }
+      .boot-loader-track {
+        display: block;
+        width: 200px;
+        height: 4px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgb(245 249 249 / 30%);
+      }
+      .boot-loader-track span {
+        display: block;
+        width: 34%;
+        height: 100%;
+        border-radius: inherit;
+        background: #f1ffd8;
+        animation: boot-progress 1.15s ease-in-out infinite;
+      }
+      .boot-loader-slow { margin: 0; font-size: 0.95rem; opacity: 0; visibility: hidden; animation: boot-show 0.4s ease 8s forwards; }
+      .boot-loader-slow a { color: #f1ffd8; font-weight: 700; text-decoration: underline; }
+      @keyframes boot-show { to { opacity: 1; visibility: visible; } }
+      @keyframes boot-sweep { from { background-position: center, 0% 50%; } to { background-position: center, 100% 50%; } }
+      @keyframes boot-progress { from { transform: translateX(-120%); } to { transform: translateX(310%); } }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-loader { animation: boot-show 0.01s linear 0.4s forwards; }
+        .boot-loader-track span { width: 100%; animation: none; }
+      }
+    </style>
+    <noscript><style>.boot-loader { display: none; }</style></noscript>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot-loader" role="status" aria-live="polite">
+        <div class="boot-loader-content">
+          <span class="boot-loader-mark" aria-hidden="true">
+            <img src="../assets/images/logo/logo-emblem.webp" width="64" height="64" alt="" />
+          </span>
+          <strong>Mind Over Matter</strong>
+          <span class="boot-loader-track" aria-hidden="true"><span></span></span>
+          <p class="boot-loader-slow">This is taking longer than usual. Check your connection or <a href="">reload the page</a>.</p>
+        </div>
+      </div>
+      <noscript>
+        <p>Mind Over Matter needs JavaScript to run. Please enable it in your browser and reload the page.</p>
+      </noscript>
+    </div>
+    <script src="./main.jsx" type="module"></script>
+  </body>
+</html>

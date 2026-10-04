@@ -1,0 +1,17 @@
+# Installed libraries (reinstall with `npm install`)
+node_modules/
+
+# Build output (recreate with `npm run build`)
+dist/
+.vite/
+
+# Local environment overrides
+.env
+.env.*
+
+# Editor and OS clutter
+.vscode/
+.idea/
+*.log
+Thumbs.db
+.DS_Store

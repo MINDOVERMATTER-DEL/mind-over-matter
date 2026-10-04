@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// Paste these into Firebase console → Firestore Database → Rules, then click Publish.
+// Anyone can read posts and events and send a contact message; only accounts listed in the "admins" collection
+// can change posts and events or read contact messages.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // createdAt is set by the server when an item is first saved and never changes afterwards;
+    // every edit stamps updatedAt instead.
+    function isNewItem(item) {
+      return item.createdAt == request.time && !('updatedAt' in item);
+    }
+
+    function isEditedItem(item) {
+      return item.createdAt == resource.data.createdAt && item.updatedAt == request.time;
+    }
+
+    function isValidPost(post) {
+      return post.keys().hasOnly(['title', 'category', 'author', 'excerpt', 'body', 'coverImage', 'createdAt', 'updatedAt'])
+        && post.title is string && post.title.size() > 0 && post.title.size() <= 200
+        && post.category in ['student-life', 'coping-skills', 'wellbeing', 'club-news']
+        && post.author is string && post.author.size() <= 100
+        && post.excerpt is string && post.excerpt.size() <= 300
+        && post.body is string && post.body.size() > 0
+        && (post.coverImage == null || (post.coverImage is string && post.coverImage.matches('data:image/jpeg;base64,.*')));
+    }
+
+    function isValidEvent(event) {
+      return event.keys().hasOnly(['title', 'type', 'description', 'date', 'time', 'venue', 'createdAt', 'updatedAt'])
+        && event.title is string && event.title.size() > 0 && event.title.size() <= 120
+        && event.type in ['Workshop', 'Support group', 'Social', 'Talk', 'Awareness', 'Other']
+        && event.description is string && event.description.size() <= 600
+        && event.date is string && event.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && event.time is string && (event.time == '' || event.time.matches('[0-9]{2}:[0-9]{2}'))
+        && event.venue is string && event.venue.size() <= 150;
+    }
+
+    // Contact-form messages. Visitors are never signed in, so creation is open but tightly validated: only these
+    // fields, sensible lengths, an email-shaped address, a known topic, unread, and a server timestamp.
+    function isValidMessage(message) {
+      return message.keys().hasOnly(['name', 'email', 'topic', 'message', 'read', 'createdAt'])
+        && message.name is string && message.name.size() > 0 && message.name.size() <= 100
+        && message.email is string && message.email.size() <= 200 && message.email.matches('[^@ ]+@[^@ ]+[.][^@ ]+')
+        && message.topic in ['General question', 'Peer counselling', 'Membership', 'Partnership', 'Events', 'Other']
+        && message.message is string && message.message.size() > 0 && message.message.size() <= 5000
+        && message.read == false
+        && message.createdAt == request.time;
+    }
+
+    match /messages/{messageId} {
+      allow create: if isValidMessage(request.resource.data);
+      allow read, delete: if isAdmin();
+      // Admins may only flip the read flag; the message itself can never be altered.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read is bool;
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidPost(request.resource.data) && isNewItem(request.resource.data);
+      allow update: if isAdmin() && isValidPost(request.resource.data) && isEditedItem(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidEvent(request.resource.data) && isNewItem(request.resource.data);
+      allow update: if isAdmin() && isValidEvent(request.resource.data) && isEditedItem(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Admin accounts are added by hand in the Firebase console, never from the website.
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
