@@ -1,7 +1,7 @@
 import { Component, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
+  ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
   Clock, Confetti, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
   Handshake, Heart, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
   Newspaper, NotePencil, Package, PencilSimple, Phone, Plant, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
@@ -135,7 +135,7 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 // blog posts arriving from the database). The visual states live in styles.css under [data-reveal].
 const REVEAL_SELECTOR = [
   '.section-heading', '.feature-card', '.about-card', '.team-card', '.post-card', '.program-card', '.event-card',
-  '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase', '.photo-tile',
+  '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase', '.photo-tile', '.flip-card',
   '.contact-card', '.contact-form-card', '.archive-empty', '.two-col > div:not(.section-heading)',
 ].join(', ');
 const REVEAL_STAGGER_MS = 80;
@@ -809,6 +809,26 @@ function HomePage() {
   );
 }
 
+// A card that turns over to show its text: on hover with a mouse, or by tapping (or Enter/Space) anywhere.
+function FlipCard({ tag, title, text }) {
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <div className={`flip-card${flipped ? ' is-flipped' : ''}`}>
+      <button type="button" className="flip-card-inner" aria-pressed={flipped} onClick={() => setFlipped((value) => !value)}>
+        <span className="flip-card-face flip-card-front">
+          <span className="journal-tag">{tag}</span>
+          <span className="flip-card-title">{title}</span>
+          <span className="flip-card-hint"><ArrowsClockwise size={16} aria-hidden="true" /> Tap to read</span>
+        </span>
+        <span className="flip-card-face flip-card-back">
+          <span className="journal-tag">{tag}</span>
+          <span className="flip-card-text">{text}</span>
+        </span>
+      </button>
+    </div>
+  );
+}
+
 // A photo from club life, with a short caption over its lower corner.
 function ClubPhoto({ src, alt, caption, width, height, wide = false, band = false }) {
   return (
@@ -1095,10 +1115,9 @@ function AboutPage() {
       </section>
 
       <section className="section">
-        <div className="container about-grid">
-          <article className="about-card"><span className="journal-tag">Our purpose</span><h3>Mental health, valued and protected.</h3><p>{purpose}</p></article>
-          <article className="about-card"><span className="journal-tag">Our vision</span><h3>Everyone gets to thrive.</h3><p>{vision}</p></article>
-          <article className="about-card"><span className="journal-tag">Membership</span><h3>Open to every KU student.</h3><p>Membership is open to medical students and to every other student currently enrolled at Kenyatta University. <a className="text-link" href="#get-involved">How to join <ArrowRight size={15} aria-hidden="true" /></a></p></article>
+        <div className="container flip-grid">
+          <FlipCard tag="Our purpose" title="Mental health, valued and protected." text={purpose} />
+          <FlipCard tag="Our vision" title="Everyone gets to thrive." text={vision} />
         </div>
       </section>
 

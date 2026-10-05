@@ -1351,6 +1351,99 @@ input {
   gap: 1.25rem;
 }
 
+/* Purpose and vision on the About page: cards that turn over to show their text. */
+.flip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.flip-card {
+  perspective: 1400px;
+}
+
+.flip-card-inner {
+  display: grid;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.85s var(--ease-out);
+}
+
+.flip-card-inner:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.flip-card.is-flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+@media (hover: hover) {
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.flip-card-face {
+  display: flex;
+  grid-area: 1 / 1;
+  flex-direction: column;
+  min-height: 230px;
+  padding: 1.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flip-card-front {
+  background: var(--panel);
+}
+
+.flip-card-back {
+  justify-content: center;
+  background: var(--metal-emerald);
+  color: #fff;
+  transform: rotateY(180deg);
+
+  --accent-deep: #8ee6c4;
+}
+
+.flip-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 580;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: var(--accent-bright);
+}
+
+.flip-card-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  color: var(--accent-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.flip-card-text {
+  font-size: 1.12rem;
+  line-height: 1.55;
+}
+
 .about-card {
   padding: 1.5rem;
   background: var(--panel);
@@ -3697,6 +3790,7 @@ input {
   .about-grid,
   .feature-grid,
   .team-grid,
+  .flip-grid,
   .admin-form-row,
   .list-item,
   .archive-item {
@@ -3891,6 +3985,10 @@ input {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: none;
+  }
+
   .page-transition,
   .page-transition-orbit,
   .page-transition-track span,
