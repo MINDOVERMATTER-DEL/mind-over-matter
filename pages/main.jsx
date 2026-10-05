@@ -1160,7 +1160,7 @@ function AboutPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">The committee</p><h2>The faces behind the organisation.</h2></div>
+          <div className="section-heading"><p className="eyebrow">Meet the team</p><h2>The faces behind the organisation.</h2></div>
           <div className="team-grid">
             {team.map((person) => (
               <article className={`team-card${person.name ? '' : ' is-vacant'}`} key={person.role}>

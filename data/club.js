@@ -132,14 +132,14 @@ export const team = [
     photo: 'rogers',
   },
   {
-    name: 'Krystal Karan',
-    role: 'Public Relations & Initiatives',
-    photo: 'krystal',
-  },
-  {
     name: 'James Mvoi',
     role: 'Head of Strategic Development & Partnerships',
     photo: 'james',
+  },
+  {
+    name: 'Krystal Karan',
+    role: 'Public Relations & Initiatives',
+    photo: 'krystal',
   },
 ];
 
