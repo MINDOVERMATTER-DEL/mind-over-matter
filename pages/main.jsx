@@ -473,7 +473,7 @@ function Footer() {
               <MapPin className="footer-icon" size={17} aria-hidden="true" />
               <address>
                 <a className="footer-link" href={contact.location.mapUrl} target="_blank" rel="noopener noreferrer">
-                  {contact.location.name}<br />{contact.location.detail}<br />{contact.location.city}
+                  {contact.location.city}
                 </a>
               </address>
             </li>
@@ -1160,7 +1160,7 @@ function AboutPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">Meet the team</p><h2>The faces behind the organisation.</h2></div>
+          <div className="section-heading"><p className="eyebrow">The committee</p><h2>The faces behind the organisation.</h2></div>
           <div className="team-grid">
             {team.map((person) => (
               <article className={`team-card${person.name ? '' : ' is-vacant'}`} key={person.role}>
@@ -1171,7 +1171,6 @@ function AboutPage() {
                 )}
                 <h3>{person.name ?? 'To be announced'}</h3>
                 <span className="post-tag">{person.role}</span>
-                <p>{person.bio}</p>
               </article>
             ))}
           </div>

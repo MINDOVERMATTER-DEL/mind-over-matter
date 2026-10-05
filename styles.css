@@ -1779,12 +1779,6 @@ input {
   letter-spacing: -0.03em;
 }
 
-.team-card p {
-  margin: 1rem 0 0;
-  color: var(--muted);
-  text-align: left;
-}
-
 .program-list {
   display: grid;
   gap: 1rem;

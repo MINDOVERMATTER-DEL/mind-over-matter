@@ -112,39 +112,34 @@ export const impact = [
   { title: 'Empowered individuals', text: 'Participants gaining tools and resources to manage their mental health, build resilience, and thrive.' },
 ];
 
-// The team on the About page. A member with `name: null` shows as "To be announced" with a placeholder
-// portrait; fill in their name, photo key, and bio once the role is filled. Photo keys map to images in
-// pages/main.jsx (teamPhotos).
+// The committee on the About page, in the order shown. A member with `name: null` shows as "To be announced"
+// with a placeholder portrait; fill in their name and photo key once the role is filled. Photo keys map to
+// images in pages/main.jsx (teamPhotos).
 export const team = [
   {
     name: 'Faith Waigi',
     role: 'Founder',
     photo: 'faith',
-    bio: "Faith guides the club's mission, vision, and objectives, keeping our work aligned with its founding framework. She facilitates communication with key stakeholders, including the Kenyatta University Medical School fraternity and mental health organizations. Faith is a mental health enthusiast and a 5th-year medical student at Kenyatta University.",
-  },
-  {
-    name: 'Rogers Kuria',
-    role: 'Head of Administration & Finance',
-    photo: 'rogers',
-    bio: 'Rogers keeps the club running smoothly behind the scenes, looking after member records and internal organisation, and overseeing budgeting, bookkeeping, and financial reporting.',
   },
   {
     name: 'Reagan Kirwa',
     role: 'Head of Programs & Initiatives',
     photo: 'reagan',
-    bio: 'Reagan leads the planning and delivery of our events, workshops, and awareness campaigns, coordinating the teams that bring each program to life. He is also the National Officer for the Standing Committee on Mental Health (SCOMH) in Kenya.',
+  },
+  {
+    name: 'Rogers Kuria',
+    role: 'Head of Administration & Finance',
+    photo: 'rogers',
   },
   {
     name: 'Krystal Karan',
     role: 'Public Relations & Initiatives',
     photo: 'krystal',
-    bio: 'Krystal is the voice of the club online. She manages our social media and communications, making sure everything we share is empathetic, inclusive, and true to our values.',
   },
   {
     name: 'James Mvoi',
     role: 'Head of Strategic Development & Partnerships',
     photo: 'james',
-    bio: 'James leads long-term planning and builds partnerships with NGOs and mental health organisations, growing what the club can offer and making sure our programs stay relevant to students.',
   },
 ];
 
