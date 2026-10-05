@@ -77,6 +77,7 @@ export const problems = [
 export const approach = [
   { title: 'Advocacy for mental health', icon: 'megaphone', text: 'Pushing for university policies and practices that promote student mental well-being.' },
   { title: 'Creation of support groups', icon: 'users', text: 'Close-knit groups and regular meet-ups where students connect with peers facing similar challenges.' },
+  { title: 'Community approach', icon: 'handshake', text: 'Social events, awareness campaigns, and open conversations that build a caring campus community, so no student faces mental health challenges alone.' },
   { title: 'Capacity building', icon: 'sprout', text: 'Workshops that build the skills, knowledge, and resources to manage stress, emotions, and mental health challenges constructively.' },
 ];
 

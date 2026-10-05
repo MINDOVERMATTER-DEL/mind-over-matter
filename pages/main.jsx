@@ -186,7 +186,7 @@ const COUNT_UP_MS = 1400;
 const easeOutCubic = (t) => 1 - (1 - t) ** 3;
 
 // Counts up from zero the first time the number scrolls into view. Screen readers get the final value.
-function CountUp({ value }) {
+function CountUp({ value, suffix = '' }) {
   const ref = useRef(null);
   const [display, setDisplay] = useState(() => (prefersReducedMotion() ? value : 0));
 
@@ -224,8 +224,8 @@ function CountUp({ value }) {
 
   return (
     <strong ref={ref}>
-      <span aria-hidden="true">{display}</span>
-      <span className="sr-only">{value}</span>
+      <span aria-hidden="true">{display}{suffix}</span>
+      <span className="sr-only">{value}{suffix}</span>
     </strong>
   );
 }
@@ -713,8 +713,8 @@ function HomePage() {
               <a href="/event#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
             </motion.div>
             <motion.ul className="hero-stats" aria-label="Club at a glance" variants={introItemVariants}>
-              <li><CountUp value={programs.length} /><span className="hero-stat-label">core programs</span></li>
-              <li><CountUp value={6} /><span className="hero-stat-label">classes represented</span></li>
+              <li><CountUp value={4} /><span className="hero-stat-label">core programs</span></li>
+              <li><CountUp value={600} suffix="+" /><span className="hero-stat-label">students represented</span></li>
               <li><CountUp value={coreValues.length} /><span className="hero-stat-label">guiding values</span></li>
             </motion.ul>
           </motion.div>
@@ -764,7 +764,7 @@ function HomePage() {
             <p className="eyebrow">Our approach</p>
             <h2>A new way of supporting each other.</h2>
           </div>
-          <div className="feature-grid feature-grid-3">
+          <div className="feature-grid">
             {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
           </div>
           <div className="hero-actions">
@@ -805,15 +805,6 @@ function HomePage() {
       </section>
 
       <MerchPromo />
-
-      <section id="journal" className="section">
-        <div className="container journal-wrap">
-          <div className="section-heading"><p className="eyebrow">Be part of it</p><h2>Join us in building a healthier community.</h2></div>
-          <div className="feature-grid feature-grid-3">
-            {waysToJoin.map((item) => <FeatureCard key={item.title} {...item} />)}
-          </div>
-        </div>
-      </section>
     </PageLayout>
   );
 }
@@ -1078,7 +1069,7 @@ function EventsPage() {
       <section className="section">
         <div className="container">
           <div className="section-heading"><p className="eyebrow">How we work</p><h2>The pillars behind every program.</h2></div>
-          <div className="feature-grid feature-grid-3">
+          <div className="feature-grid">
             {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
           </div>
         </div>
