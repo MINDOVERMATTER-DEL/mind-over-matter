@@ -17,6 +17,7 @@ const pages = [
   'article.html',
   'about-us.html',
   'governance.html',
+  'merch.html',
   'contact-us.html',
   'privacy.html',
   'admin.html',

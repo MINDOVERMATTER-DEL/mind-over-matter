@@ -1,11 +1,11 @@
 import { Component, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, Clock, Confetti,
-  DownloadSimple, EnvelopeSimple, Eye, FacebookLogo, FileText, GraduationCap, HandHeart, Handshake, Heart, IconContext,
-  InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, MoonStars, Newspaper, NotePencil, PencilSimple,
-  Phone, Plant, Plus, Quotes, ShareNetwork, SignOut, SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash,
-  UsersThree, WhatsappLogo, X, XLogo,
+  ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
+  Clock, Confetti, DownloadSimple, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
+  Handshake, Heart, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
+  Newspaper, NotePencil, Package, PencilSimple, Phone, Plant, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
+  SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Truck, UsersThree, WhatsappLogo, X, XLogo,
 } from './icons.jsx';
 import { AnimatePresence, MotionConfig, motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { Analytics } from '@vercel/analytics/react';
@@ -13,9 +13,11 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import { posts as samplePosts } from '../data/posts.js';
 import {
   blogCategories, categories, categoryLabel, compressCover, createEvent, createPost, describeError, eventTypes, fetchEvents, fetchPosts,
-  fetchMessages, isFirebaseConfigured, messageTopics, removeEvent, removeMessage, removePost, resetPassword, sendMessage,
-  setMessageRead, signIn, signOut, updateEvent, updatePost, watchAdmin,
+  deliveryOptions, fetchMessages, fetchOrders, isFirebaseConfigured, messageTopics, orderStatuses, placeOrder,
+  removeEvent, removeMessage, removeOrder, removePost, resetPassword, sendMessage, setMessageRead, setOrderStatus, signIn,
+  signOut, updateEvent, updatePost, watchAdmin,
 } from '../data/blog.js';
+import { findProduct, formatPrice, merchProducts, merchTagline, orderTotal } from '../data/merch.js';
 import {
   approach, contact, coreValues, executiveCommittee, founders, funding, governanceFacts, impact, logoSymbolism, mission,
   objectives, preamble, problems, programs, purpose, quote, rules, siteCredit, socialLinks, vision, waysToJoin,
@@ -36,6 +38,7 @@ const siteLinks = [
   ['Home', '/'],
   ['Events', '/event'],
   ['Blog', '/blog'],
+  ['Merch', '/merch'],
   ['About Us', '/about-us'],
   ['Contact', '/contact-us'],
 ];
@@ -228,6 +231,7 @@ function Header() {
   const [isCompact, setIsCompact] = useState(() => window.matchMedia(COMPACT_QUERY).matches);
   const headerRef = useRef(null);
   const activeHref = getActiveNavigationHref(window.location.pathname);
+  const { count: cartCount } = useCart();
   const { scrollY } = useScroll();
   // Where the page was scrolled to when the menu opened (null while it's closed).
   const menuOpenedAt = useRef(null);
@@ -363,9 +367,17 @@ function Header() {
             </nav>
           )}
 
-          <a href={ctaHref} className="button button-secondary">
-            Join the club
-          </a>
+          <div className="nav-actions">
+            {cartCount > 0 && (
+              <a href="/merch?view=cart" className="cart-link" aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
+                <ShoppingBag size={22} aria-hidden="true" />
+                <span className="cart-count" aria-hidden="true">{cartCount}</span>
+              </a>
+            )}
+            <a href={ctaHref} className="button button-secondary">
+              Join the club
+            </a>
+          </div>
         </div>
     </motion.header>
   );
@@ -758,6 +770,8 @@ function HomePage() {
         </div>
       </section>
 
+      <MerchPromo />
+
       <section id="journal" className="section">
         <div className="container journal-wrap">
           <div className="section-heading"><p className="eyebrow">Be part of it</p><h2>Join us in building a healthier community.</h2></div>
@@ -1037,6 +1051,7 @@ function EventsPage() {
           </div>
         </div>
       </section>
+      <MerchBanner />
     </PageLayout>
   );
 }
@@ -1529,6 +1544,7 @@ const dashboardTabs = [
   { id: 'posts', label: 'Blog posts', Icon: Newspaper },
   { id: 'events', label: 'Events', Icon: CalendarDots },
   { id: 'messages', label: 'Messages', Icon: EnvelopeSimple },
+  { id: 'orders', label: 'Orders', Icon: Package },
 ];
 
 const NO_MESSAGES = [];
@@ -1542,6 +1558,8 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
   // Messages are private, so they load here (for signed-in admins) rather than for every visitor.
   const messages = useRemoteList(fetchMessages, NO_MESSAGES);
   const unreadCount = messages.items.filter((message) => !message.read).length;
+  const orders = useRemoteList(fetchOrders, NO_MESSAGES);
+  const newOrderCount = orders.items.filter((order) => order.status === 'new').length;
   const [tab, setTab] = useState('overview');
   // null shows the list; 'new' opens a blank editor; an item opens it for editing.
   const [postEditing, setPostEditing] = useState(null);
@@ -1558,13 +1576,12 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
   const GreetingIcon = greeting.Icon;
   const displayName = capitalize((adminName || user.email.split('@')[0]).split(/\s+/)[0]);
   const upcoming = events.filter(isUpcoming);
-  const latestPost = posts[0];
 
   const stats = [
     { label: 'Published posts', value: postsStatus === 'ready' ? posts.length : '–', Icon: Newspaper },
     { label: 'Upcoming events', value: eventsStatus === 'ready' ? upcoming.length : '–', Icon: CalendarStar },
     { label: 'Unread messages', value: messages.status === 'ready' ? unreadCount : '–', Icon: EnvelopeSimple },
-    { label: 'Last post', value: latestPost?.createdAt ? shortDate.format(latestPost.createdAt) : '–', Icon: FileText },
+    { label: 'New orders', value: orders.status === 'ready' ? newOrderCount : '–', Icon: Package },
   ];
 
   function openTab(id) {
@@ -1629,6 +1646,7 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
             {id === 'posts' && postsStatus === 'ready' && <span className="dashboard-count">{posts.length}</span>}
             {id === 'events' && eventsStatus === 'ready' && <span className="dashboard-count">{events.length}</span>}
             {id === 'messages' && unreadCount > 0 && <span className="dashboard-count is-alert" aria-label={`${unreadCount} unread`}>{unreadCount}</span>}
+            {id === 'orders' && newOrderCount > 0 && <span className="dashboard-count is-alert" aria-label={`${newOrderCount} new`}>{newOrderCount}</span>}
           </button>
         ))}
       </div>
@@ -1646,6 +1664,7 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
         {tab === 'posts' && <PostsManager editing={postEditing} onEdit={setPostEditing} />}
         {tab === 'events' && <EventsManager editing={eventEditing} onEdit={setEventEditing} />}
         {tab === 'messages' && <MessagesInbox messages={messages.items} status={messages.status} refresh={messages.refresh} />}
+        {tab === 'orders' && <OrdersManager orders={orders.items} status={orders.status} refresh={orders.refresh} />}
       </div>
 
       <p className="dashboard-signed-in">Signed in as {user.email}</p>
@@ -2111,6 +2130,157 @@ function EventEditor({ event, onCancel, onSaved }) {
   );
 }
 
+// Kenyan numbers like "0712 345 678" or "+254 712 345 678" → "254712345678" for WhatsApp links.
+function whatsAppNumber(phone) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) return `254${digits.slice(1)}`;
+  return digits;
+}
+
+const orderStatusLabel = (id) => orderStatuses.find((status) => status.id === id)?.label ?? id;
+
+function OrdersManager({ orders, status, refresh }) {
+  const [filter, setFilter] = useState('all');
+  const [selectedId, setSelectedId] = useState(null);
+  const [notice, setNotice] = useState(null);
+  // Status changes show instantly; the list is refreshed from the database in the background.
+  const [statusOverrides, setStatusOverrides] = useState({});
+
+  const statusOf = (order) => statusOverrides[order.id] ?? order.status;
+  const visible = filter === 'all' ? orders : orders.filter((order) => statusOf(order) === filter);
+  const selected = orders.find((order) => order.id === selectedId) ?? null;
+
+  async function changeStatus(order, next) {
+    const previous = statusOf(order);
+    setStatusOverrides((current) => ({ ...current, [order.id]: next }));
+    try {
+      await setOrderStatus(order.id, next);
+      refresh();
+    } catch (statusError) {
+      setStatusOverrides((current) => ({ ...current, [order.id]: previous }));
+      setNotice({ type: 'error', text: describeError(statusError) });
+    }
+  }
+
+  async function handleDelete(order) {
+    try {
+      await removeOrder(order.id);
+      setSelectedId(null);
+      setNotice({ type: 'success', text: `Deleted order ${order.reference}.` });
+      await refresh();
+    } catch (deleteError) {
+      setNotice({ type: 'error', text: describeError(deleteError) });
+    }
+  }
+
+  const itemCount = (order) => order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const subject = (order) => encodeURIComponent(`Your Mind Over Matter order ${order.reference}`);
+
+  return (
+    <section className="dashboard-card" aria-labelledby="orders-heading">
+      <div className="dashboard-card-head">
+        <div>
+          <h2 id="orders-heading">Merch orders</h2>
+          <p>Contact each buyer to confirm the price, payment, and pickup or delivery, then update the status.</p>
+        </div>
+        <div className="inbox-filters" role="group" aria-label="Show orders">
+          {[{ id: 'all', label: 'All' }, ...orderStatuses].map(({ id, label }) => (
+            <button key={id} type="button" className={`pill${filter === id ? ' is-active' : ''}`} aria-pressed={filter === id} onClick={() => setFilter(id)}>{label}</button>
+          ))}
+        </div>
+      </div>
+      <DashboardNotice notice={notice} />
+      {status === 'loading' && <div className="archive-empty" role="status"><p>Loading orders…</p></div>}
+      {status === 'error' && <div className="archive-empty" role="alert"><h3>We couldn’t load orders.</h3><p>Check the latest security rules are published, then refresh the page.</p></div>}
+      {status === 'ready' && !visible.length && (
+        <div className="archive-empty">
+          <h3>{filter === 'all' ? 'No orders yet.' : `No ${orderStatusLabel(filter).toLowerCase()} orders.`}</h3>
+          <p>Orders placed on the Merch page appear here.</p>
+        </div>
+      )}
+
+      {visible.length > 0 && (
+        <div className={`inbox${selected ? ' has-selection' : ''}`}>
+          <ul className="inbox-list">
+            {visible.map((order) => (
+              <li key={order.id}>
+                <button
+                  type="button"
+                  className={`inbox-item${statusOf(order) === 'new' ? ' is-unread' : ''}${order.id === selectedId ? ' is-selected' : ''}`}
+                  onClick={() => setSelectedId(order.id)}
+                  aria-current={order.id === selectedId ? 'true' : undefined}
+                >
+                  <span className="inbox-item-top">
+                    <strong className="inbox-item-name">{order.name}</strong>
+                    <time dateTime={order.createdAt.toISOString()}>{shortDate.format(order.createdAt)}</time>
+                  </span>
+                  <span className="inbox-item-topic">
+                    {statusOf(order) === 'new' && <span className="inbox-dot" aria-label="New" />}
+                    {order.reference} · <span className={`order-status is-${statusOf(order)}`}>{orderStatusLabel(statusOf(order))}</span>
+                  </span>
+                  <span className="inbox-item-preview">
+                    {itemCount(order)} item{itemCount(order) === 1 ? '' : 's'}: {order.items.map((item) => item.name).join(', ')}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="inbox-reader">
+            {selected ? (
+              <article aria-labelledby="order-reader-heading">
+                <button type="button" className="button button-ghost button-small inbox-back" onClick={() => setSelectedId(null)}>Back to orders</button>
+                <span className="post-tag">{selected.reference}</span>
+                <h3 id="order-reader-heading" className="inbox-reader-name">{selected.name}</h3>
+                <p className="inbox-meta">
+                  <span>{messageDateTime.format(selected.createdAt)}</span>
+                  <span>{selected.delivery}</span>
+                </p>
+
+                <div className="order-contact">
+                  <a className="button button-primary button-small" href={`tel:${selected.phone.replace(/[^\d+]/g, '')}`}><Phone size={15} aria-hidden="true" /> Call {selected.phone}</a>
+                  <a className="button button-ghost button-small" href={`https://wa.me/${whatsAppNumber(selected.phone)}`} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={15} aria-hidden="true" /> WhatsApp</a>
+                  <a className="button button-ghost button-small" href={`mailto:${selected.email}?subject=${subject(selected)}`}><EnvelopeSimple size={15} aria-hidden="true" /> Email</a>
+                </div>
+                <p className="inbox-meta"><a className="inbox-meta-email" href={`mailto:${selected.email}`}>{selected.email}</a></p>
+
+                <table className="order-items">
+                  <thead><tr><th scope="col">Item</th><th scope="col">Size</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>
+                  <tbody>
+                    {selected.items.map((item) => (
+                      <tr key={`${item.productId}-${item.size}`}>
+                        <td>{item.name}</td><td>{item.size}</td><td>{item.quantity}</td>
+                        <td>{item.price === null ? '—' : formatPrice(item.price * item.quantity)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot><tr><th scope="row" colSpan={3}>Total</th><td>{selected.total === null ? 'To confirm' : formatPrice(selected.total)}</td></tr></tfoot>
+                </table>
+
+                {selected.note && <div className="inbox-body order-note"><strong>Note from buyer:</strong> {selected.note}</div>}
+
+                <div className="dashboard-row-actions inbox-actions">
+                  <label className="order-status-select">Status
+                    <select className="order-status-dropdown" value={statusOf(selected)} onChange={(event) => changeStatus(selected, event.target.value)}>
+                      {orderStatuses.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
+                    </select>
+                  </label>
+                  <DeleteControl onDelete={() => handleDelete(selected)} />
+                </div>
+              </article>
+            ) : (
+              <div className="inbox-placeholder">
+                <Package size={34} aria-hidden="true" />
+                <p>Select an order to see the buyer’s details.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 const messageDateTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
 const MESSAGE_PREVIEW_LENGTH = 90;
 
@@ -2235,6 +2405,442 @@ function MessagesInbox({ messages, status, refresh }) {
   );
 }
 
+/* ---------- Merch shop ---------- */
+// Pages: /merch (all products), /merch?product=<id> (one product), /merch?view=cart (cart and checkout).
+// There is no online payment: an order is sent to the admin dashboard, and the committee contacts the buyer by
+// phone or email to confirm the price, payment, and pickup or delivery.
+
+const CART_STORAGE_KEY = 'mom-cart';
+const MAX_QUANTITY = 10;
+const CartContext = createContext(null);
+
+function readStoredCart() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? '[]');
+    return Array.isArray(stored) ? stored.filter((item) => findProduct(item.productId)) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Cart items are { productId, size, quantity }, remembered in the browser between visits.
+function CartProvider({ children }) {
+  const [items, setItems] = useState(readStoredCart);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // Storage can be unavailable (private browsing); the cart still works for this visit.
+    }
+  }, [items]);
+
+  const value = {
+    items,
+    count: items.reduce((sum, item) => sum + item.quantity, 0),
+    add(productId, size, quantity) {
+      setItems((current) => {
+        const existing = current.find((item) => item.productId === productId && item.size === size);
+        if (!existing) return [...current, { productId, size, quantity }];
+        return current.map((item) => (item === existing
+          ? { ...item, quantity: Math.min(MAX_QUANTITY, item.quantity + quantity) }
+          : item));
+      });
+    },
+    setQuantity(productId, size, quantity) {
+      setItems((current) => current.map((item) => (item.productId === productId && item.size === size
+        ? { ...item, quantity: Math.max(1, Math.min(MAX_QUANTITY, quantity)) }
+        : item)));
+    },
+    remove(productId, size) {
+      setItems((current) => current.filter((item) => !(item.productId === productId && item.size === size)));
+    },
+    clear() {
+      setItems([]);
+    },
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+function useCart() {
+  return useContext(CartContext);
+}
+
+// Cart items joined with their product details and current price.
+function useCartLines() {
+  const { items } = useCart();
+  return items.map((item) => {
+    const product = findProduct(item.productId);
+    return { ...item, product, name: product.name, price: product.price };
+  });
+}
+
+function QuantityStepper({ value, onChange, label }) {
+  return (
+    <div className="quantity-stepper" role="group" aria-label={label}>
+      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} aria-label="Decrease quantity"><Minus size={16} aria-hidden="true" /></button>
+      <output aria-live="polite">{value}</output>
+      <button type="button" onClick={() => onChange(value + 1)} disabled={value >= MAX_QUANTITY} aria-label="Increase quantity"><Plus size={16} aria-hidden="true" /></button>
+    </div>
+  );
+}
+
+const orderSteps = [
+  { icon: ShoppingBag, title: 'Choose your merch', text: 'Pick your items and sizes, then place your order with your phone number and email.' },
+  { icon: HandCoins, title: 'We contact you', text: 'A committee member gets in touch to confirm the price, payment, and your order.' },
+  { icon: Truck, title: 'Collect or receive it', text: 'Pick it up on campus or arrange delivery, whichever suits you.' },
+];
+
+function OrderSteps() {
+  return (
+    <ol className="order-steps">
+      {orderSteps.map(({ icon: StepIcon, title, text }) => (
+        <li key={title}>
+          <span className="feature-icon"><StepIcon size={24} aria-hidden="true" /></span>
+          <div><strong>{title}</strong><p>{text}</p></div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function ProductCard({ product }) {
+  const [front, back] = product.images;
+  return (
+    <article className="product-card">
+      <a href={`/merch?product=${product.id}`} className="product-card-link">
+        <div className={`product-card-image${back ? ' has-back' : ''}`}>
+          {/* The products are the page's main content, so their front photos load straight away. */}
+          <img className="product-card-photo" src={front.src} alt={`${product.name}, front`} width="1000" height="1250" decoding="async" />
+          {back && <img className="product-card-photo product-card-back" src={back.src} alt="" width="1000" height="1250" loading="lazy" decoding="async" />}
+        </div>
+        <div className="product-card-body">
+          <span className="post-tag">{product.category}</span>
+          <h3 className="product-card-title">{product.name}</h3>
+          <p className="product-price">{formatPrice(product.price)}</p>
+        </div>
+      </a>
+    </article>
+  );
+}
+
+function MerchPage() {
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('product');
+  // Keyed by product so switching products starts with a fresh size and photo choice.
+  if (productId) return <ProductPage key={productId} product={findProduct(productId)} />;
+  if (params.get('view') === 'cart') return <CartPage />;
+  return <ShopPage />;
+}
+
+function ShopPage() {
+  const [category, setCategory] = useState('All');
+  const categoryNames = ['All', ...new Set(merchProducts.map((product) => product.category))];
+  const visible = category === 'All' ? merchProducts : merchProducts.filter((product) => product.category === category);
+
+  return (
+    <PageLayout pageClass="page-main">
+      <PageHero eyebrow="Merch" title="Wear the message." lede={`${merchTagline}. Every purchase supports Mind Over Matter’s programs for students.`} />
+      <section className="section">
+        <div className="container">
+          <div className="shop-toolbar">
+            <div className="filter-pills" role="group" aria-label="Filter merch">
+              {categoryNames.map((name) => (
+                <button key={name} type="button" className={`pill${category === name ? ' is-active' : ''}`} aria-pressed={category === name} onClick={() => setCategory(name)}>{name}</button>
+              ))}
+            </div>
+            <CartSummaryLink />
+          </div>
+          <div className="product-grid">
+            {visible.map((product) => <ProductCard key={product.id} product={product} />)}
+          </div>
+        </div>
+      </section>
+      <section className="section alt-section">
+        <div className="container">
+          <div className="section-heading"><p className="eyebrow">How ordering works</p><h2>No online payment needed.</h2></div>
+          <OrderSteps />
+        </div>
+      </section>
+    </PageLayout>
+  );
+}
+
+function CartSummaryLink() {
+  const { count } = useCart();
+  if (!count) return null;
+  return (
+    <a href="/merch?view=cart" className="button button-primary">
+      <ShoppingBag size={17} aria-hidden="true" /> View cart ({count})
+    </a>
+  );
+}
+
+function ProductPage({ product }) {
+  const { add } = useCart();
+  const [imageIndex, setImageIndex] = useState(0);
+  const [size, setSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
+
+  useEffect(() => {
+    if (product) document.title = `${product.name} | Mind Over Matter merch`;
+  }, [product]);
+
+  if (!product) {
+    return (
+      <PageLayout pageClass="page-main">
+        <PageHero eyebrow="Merch" title="We couldn’t find that item." lede="It may have been removed, or the link may be incorrect." />
+        <section className="section"><div className="container"><a href="/merch" className="button button-primary">See all merch <ArrowRight size={17} aria-hidden="true" /></a></div></section>
+      </PageLayout>
+    );
+  }
+
+  function handleAdd() {
+    if (!size) {
+      setSizeError(true);
+      return;
+    }
+    add(product.id, size, quantity);
+    setAdded(true);
+  }
+
+  const image = product.images[imageIndex];
+  return (
+    <PageLayout pageClass="page-main">
+      <section className="section product-section">
+        <div className="container">
+          <a href="/merch" className="text-link product-back"><ArrowLeft size={16} aria-hidden="true" /> All merch</a>
+          <div className="product-layout">
+            <div className="product-gallery">
+              <div className="product-main-image">
+                <img className="product-main-photo" src={image.src} alt={`${product.name}, ${image.label.toLowerCase()}`} width="1000" height="1250" />
+              </div>
+              {product.images.length > 1 && (
+                <div className="product-thumbs" role="group" aria-label="Product views">
+                  {product.images.map((view, index) => (
+                    <button key={view.label} type="button" className={`product-thumb${index === imageIndex ? ' is-active' : ''}`} aria-pressed={index === imageIndex} onClick={() => setImageIndex(index)}>
+                      <img className="product-thumb-photo" src={view.src} alt="" width="1000" height="1250" />
+                      <span>{view.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="product-info">
+              <span className="post-tag">{product.category}</span>
+              <h1>{product.name}</h1>
+              <p className="product-price product-price-large">{formatPrice(product.price)}</p>
+              <p className="product-description">{product.description}</p>
+
+              <fieldset className="size-picker">
+                <legend>Size {sizeError && <span className="size-error" role="alert">Please choose a size</span>}</legend>
+                <div className="size-options">
+                  {product.sizes.map((option) => (
+                    <label key={option} className={`size-option${size === option ? ' is-active' : ''}`}>
+                      <input className="size-option-input" type="radio" name="size" value={option} checked={size === option} onChange={() => { setSize(option); setSizeError(false); setAdded(false); }} />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="product-buy">
+                <QuantityStepper value={quantity} onChange={(next) => { setQuantity(Math.max(1, Math.min(MAX_QUANTITY, next))); setAdded(false); }} label="Quantity" />
+                <button type="button" className="button button-primary" onClick={handleAdd}><ShoppingBag size={17} aria-hidden="true" /> Add to cart</button>
+              </div>
+              {added && (
+                <p className="dashboard-notice is-success product-added" role="status">
+                  <CheckCircle size={18} aria-hidden="true" /> Added to your cart. <a href="/merch?view=cart" className="article-link">View cart and order</a>
+                </p>
+              )}
+
+              <ul className="check-list check-list-compact product-details">
+                {product.details.map((detail) => <li key={detail}>{detail}</li>)}
+              </ul>
+              <p className="admin-hint">No online payment: after you order, we contact you to confirm the price, payment, and pickup or delivery.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </PageLayout>
+  );
+}
+
+function CartPage() {
+  const cart = useCart();
+  const lines = useCartLines();
+  const total = orderTotal(lines);
+  const [status, setStatus] = useState({ type: '', text: '' });
+  const [busy, setBusy] = useState(false);
+  const [confirmation, setConfirmation] = useState(null);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = Object.fromEntries(new FormData(form));
+    // Hidden spam trap, as on the contact form.
+    if (values.website) {
+      setConfirmation({ reference: '', name: values.name });
+      return;
+    }
+    if (!isFirebaseConfigured) {
+      setStatus({ type: 'error', text: `Ordering isn’t connected yet. Please email us at ${contact.email}.` });
+      return;
+    }
+    setBusy(true);
+    setStatus({ type: '', text: '' });
+    try {
+      const reference = await placeOrder({
+        ...values,
+        items: lines.map(({ productId, name, size, quantity, price }) => ({ productId, name, size, quantity, price })),
+        total,
+      });
+      cart.clear();
+      setConfirmation({ reference, name: values.name.trim().split(/\s+/)[0] });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      setStatus({ type: 'error', text: `Sorry, your order couldn’t be sent. Please try again, or email us at ${contact.email}.` });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (confirmation) {
+    return (
+      <PageLayout pageClass="page-main">
+        <section className="section">
+          <div className="container narrow-container order-confirmation">
+            <span className="order-confirmation-icon"><CheckCircle size={44} aria-hidden="true" /></span>
+            <p className="eyebrow">Order received</p>
+            <h1>Thank you{confirmation.name ? `, ${confirmation.name}` : ''}!</h1>
+            <p className="lede">A committee member will contact you by phone or email to confirm the price, payment, and pickup or delivery.</p>
+            {confirmation.reference && <p className="order-reference">Your order reference: <strong>{confirmation.reference}</strong></p>}
+            <div className="hero-actions"><a href="/merch" className="button button-ghost">Back to merch</a><a href="/" className="button button-primary">Go to the home page</a></div>
+          </div>
+        </section>
+      </PageLayout>
+    );
+  }
+
+  return (
+    <PageLayout pageClass="page-main">
+      <PageHero eyebrow="Merch" title="Your cart." lede={lines.length ? 'Check your items, then send us your order. No payment is taken online.' : undefined} />
+      <section className="section">
+        <div className="container">
+          {!lines.length ? (
+            <div className="archive-empty">
+              <h3>Your cart is empty.</h3>
+              <p>Browse our hoodies and T-shirts to get started.</p>
+              <a href="/merch" className="button button-primary cart-empty-button">Shop merch <ArrowRight size={17} aria-hidden="true" /></a>
+            </div>
+          ) : (
+            <div className="cart-layout">
+              <section className="dashboard-card" aria-labelledby="cart-items-heading">
+                <h2 id="cart-items-heading" className="cart-heading">Items ({cart.count})</h2>
+                <ul className="cart-list">
+                  {lines.map((line) => (
+                    <li key={`${line.productId}-${line.size}`} className="cart-line">
+                      <a href={`/merch?product=${line.productId}`} className="cart-line-image"><img className="cart-line-photo" src={line.product.images[0].src} alt="" width="1000" height="1250" /></a>
+                      <div className="cart-line-info">
+                        <a href={`/merch?product=${line.productId}`} className="cart-line-name">{line.name}</a>
+                        <span>Size {line.size} · {formatPrice(line.price)}</span>
+                        <div className="cart-line-actions">
+                          <QuantityStepper value={line.quantity} onChange={(next) => cart.setQuantity(line.productId, line.size, next)} label={`Quantity of ${line.name}, size ${line.size}`} />
+                          <button type="button" className="admin-link-button" onClick={() => cart.remove(line.productId, line.size)}>Remove</button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="cart-total">
+                  <span>Total</span>
+                  <strong>{total === null ? 'Confirmed when we contact you' : formatPrice(total)}</strong>
+                </div>
+              </section>
+
+              <section className="dashboard-card" aria-labelledby="checkout-heading">
+                <h2 id="checkout-heading" className="cart-heading">Your details</h2>
+                <form className="admin-form" onSubmit={handleSubmit}>
+                  <label>Full name<input name="name" type="text" maxLength={100} autoComplete="name" required /></label>
+                  <label>Phone number <span className="admin-hint">We’ll call or WhatsApp you about your order.</span>
+                    <input name="phone" type="tel" inputMode="tel" maxLength={20} placeholder="e.g. 0712 345 678" autoComplete="tel" pattern="[+0-9 ()\-]{9,20}" required />
+                  </label>
+                  <label>Email<input name="email" type="email" maxLength={200} autoComplete="email" required /></label>
+                  <label>How would you like to receive it?
+                    <select name="delivery" defaultValue={deliveryOptions[0]} required>
+                      {deliveryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                  </label>
+                  <label>Anything else? <span className="admin-hint">Optional: questions, preferred pickup time, delivery area.</span>
+                    <textarea name="note" rows={3} maxLength={1000} />
+                  </label>
+                  <label className="contact-trap" aria-hidden="true">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
+                  <button type="submit" className="button button-primary" disabled={busy}>{busy ? 'Sending order…' : 'Place order'}</button>
+                  <p className="admin-hint">No payment is taken now. By ordering you agree to be contacted about it, as described in our <a className="article-link" href="/privacy">privacy policy</a>.</p>
+                  <p className={`form-status ${status.type}`} aria-live="polite">{status.text}</p>
+                </form>
+              </section>
+            </div>
+          )}
+        </div>
+      </section>
+    </PageLayout>
+  );
+}
+
+const PROMO_PRODUCT_IDS = ['hoodie-black', 'tee-green-white-print', 'hoodie-white'];
+
+// Home page section advertising the merch.
+function MerchPromo() {
+  return (
+    <section className="section merch-promo-section">
+      <div className="container">
+        <div className="merch-promo">
+          <div className="merch-promo-copy">
+            <p className="eyebrow">New · Club merch</p>
+            <h2>Wear the message.</h2>
+            <p>Hoodies and T-shirts carrying our motto, <em>{merchTagline}</em>. Every purchase supports our programs.</p>
+            <a href="/merch" className="button button-light"><ShoppingBag size={17} aria-hidden="true" /> Shop merch</a>
+          </div>
+          <div className="merch-promo-products">
+            {PROMO_PRODUCT_IDS.map((id) => {
+              const product = findProduct(id);
+              return (
+                <a key={id} href={`/merch?product=${id}`} className="merch-promo-item">
+                  <img className="merch-promo-photo" src={product.images[0].src} alt={product.name} width="1000" height="1250" loading="lazy" decoding="async" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// A smaller merch banner for other pages.
+function MerchBanner() {
+  const product = findProduct('hoodie-green');
+  return (
+    <section className="section section-compact">
+      <div className="container">
+        <aside className="merch-banner" aria-label="Club merch">
+          <img className="merch-banner-photo" src={product.images[0].src} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
+          <div>
+            <h2>Rep the club at our next event.</h2>
+            <p>Mind Over Matter hoodies and T-shirts are now available.</p>
+          </div>
+          <a href="/merch" className="button button-primary">Shop merch <ArrowRight size={17} aria-hidden="true" /></a>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 function NotFoundPage() {
   return (
     <PageLayout pageClass="page-main">
@@ -2314,6 +2920,7 @@ const pageTitles = {
   'article': 'Mind Over Matter | Article',
   'about-us': 'About Us | Mind Over Matter',
   'governance': 'Governance | Mind Over Matter',
+  'merch': 'Merch | Mind Over Matter',
   'contact-us': 'Contact Us | Mind Over Matter',
   'privacy': 'Privacy Policy | Mind Over Matter',
   'admin': 'Admin | Mind Over Matter',
@@ -2446,6 +3053,7 @@ function App() {
     'article': ArticlePage,
     'about-us': AboutPage,
     'governance': GovernancePage,
+    'merch': MerchPage,
     'contact-us': ContactPage,
     'privacy': PrivacyPage,
     'admin': AdminPage,
@@ -2458,7 +3066,9 @@ function App() {
       {/* Every Phosphor icon on the site defaults to the two-tone style unless it sets its own weight. */}
       <IconContext.Provider value={ICON_DEFAULTS}>
         <SiteDataProvider>
-          <ErrorBoundary key={page}>{content}</ErrorBoundary>
+          <CartProvider>
+            <ErrorBoundary key={page}>{content}</ErrorBoundary>
+          </CartProvider>
         </SiteDataProvider>
       </IconContext.Provider>
       {/* Vercel visitor and page-speed statistics (anonymous, no cookies). Admin visits are left out. */}

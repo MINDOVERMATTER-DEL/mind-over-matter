@@ -216,6 +216,75 @@ export async function removeMessage(id) {
   await firestore.deleteDoc(firestore.doc(db, 'messages', id));
 }
 
+/* ---------- Merch orders ---------- */
+// Anyone can place an order; only admins can read orders and update their status (see firestore.rules).
+
+export const orderStatuses = [
+  { id: 'new', label: 'New' },
+  { id: 'contacted', label: 'Contacted' },
+  { id: 'completed', label: 'Completed' },
+  { id: 'cancelled', label: 'Cancelled' },
+];
+
+export const deliveryOptions = ['Pick up on campus', 'Arrange delivery'];
+
+function toOrder(id, data) {
+  return {
+    id,
+    reference: orderReference(id),
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    delivery: data.delivery,
+    note: data.note || '',
+    items: data.items || [],
+    total: data.total ?? null,
+    status: data.status || 'new',
+    createdAt: data.createdAt?.toDate() ?? new Date(),
+  };
+}
+
+// A short code buyers and admins can quote, e.g. "MOM-4F7KQ2".
+export function orderReference(id) {
+  return `MOM-${id.slice(0, 6).toUpperCase()}`;
+}
+
+// items: [{ productId, name, size, quantity, price }] with price null until prices are set.
+export async function placeOrder({ name, phone, email, delivery, note, items, total }) {
+  const { firestore, db } = await loadDatabase();
+  const ref = await firestore.addDoc(firestore.collection(db, 'orders'), {
+    name: name.trim(),
+    phone: phone.trim(),
+    email: email.trim(),
+    delivery,
+    note: note.trim(),
+    items: items.map(({ productId, name: itemName, size, quantity, price }) => ({
+      productId, name: itemName, size, quantity, price: price ?? null,
+    })),
+    total: total ?? null,
+    status: 'new',
+    createdAt: firestore.serverTimestamp(),
+  });
+  return orderReference(ref.id);
+}
+
+export async function fetchOrders() {
+  const { firestore, db } = await loadDatabase();
+  const { collection, getDocs, orderBy, query } = firestore;
+  const snapshot = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
+  return snapshot.docs.map((doc) => toOrder(doc.id, doc.data()));
+}
+
+export async function setOrderStatus(id, status) {
+  const { firestore, db } = await loadDatabase();
+  await firestore.updateDoc(firestore.doc(db, 'orders', id), { status });
+}
+
+export async function removeOrder(id) {
+  const { firestore, db } = await loadDatabase();
+  await firestore.deleteDoc(firestore.doc(db, 'orders', id));
+}
+
 /* ---------- Admin sign-in ---------- */
 
 // Calls back with { user, isAdmin, adminName } whenever the sign-in state changes; returns an unsubscribe function.
