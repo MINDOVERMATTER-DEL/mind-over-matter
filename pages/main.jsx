@@ -1201,8 +1201,8 @@ function AboutPage() {
       </div></section>
 
       <section className="section alt-section"><div className="container">
-        <div className="section-heading"><p className="eyebrow">How we’re funded</p><h2>Keeping support accessible to everyone.</h2></div>
-        <div className="about-grid">
+        <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>Keeping support accessible to everyone.</h2></div>
+        <div className="feature-grid">
           {funding.map((item, index) => <article className="about-card" key={item.title}><span className="journal-tag">{String(index + 1).padStart(2, '0')}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
         </div>
       </div></section>

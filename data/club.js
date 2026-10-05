@@ -157,7 +157,8 @@ export const waysToJoin = [
 ];
 
 export const funding = [
-  { title: 'Membership fees', text: 'A sliding-scale fee lets every student access our programs according to their financial ability.' },
-  { title: 'Grants and donations', text: 'We seek funding from foundations, organizations, and individuals who support our mission.' },
-  { title: 'Partnerships', text: 'We collaborate with mental health organizations and professionals to deliver services and raise awareness.' },
+  { title: 'Partnerships', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.' },
+  { title: 'Grants', text: 'We apply for grants from foundations and organisations that invest in student mental health.' },
+  { title: 'Donations', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.' },
+  { title: 'Sponsorships', text: 'Businesses and organisations can sponsor our events, workshops, and awareness campaigns.' },
 ];
