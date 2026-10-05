@@ -32,7 +32,6 @@ import krystalPhoto from '../assets/images/team/krystal-karan.webp';
 import jamesPhoto from '../assets/images/team/james-mvoi.webp';
 import clubGroupPhoto from '../assets/images/community/club-group.webp';
 import supportSessionPhoto from '../assets/images/community/support-session.webp';
-import heroIllustration from '../assets/images/illustrations/mental-health-matters.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
 import articlesPdf from '../documents/MIND OVER MATTER ARTICLES OF ASSOCIATION.pdf?url';
@@ -691,7 +690,19 @@ function HomePage() {
 
   return (
     <PageLayout>
-      <section className="hero">
+      <section className="hero hero-photo">
+        {/* The club group photo fills the hero, under a green wash that keeps the text readable. */}
+        <motion.img
+          className="hero-photo-bg"
+          src={clubGroupPhoto}
+          alt=""
+          width="1280"
+          height="960"
+          fetchPriority="high"
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.6, ease: easeOutExpo }}
+        />
         <div className="container hero-grid">
           <motion.div className="hero-copy" initial="hidden" animate="shown" variants={introVariants}>
             <motion.p className="eyebrow" variants={introItemVariants}>Kenyatta University · Student mental health</motion.p>
@@ -702,28 +713,11 @@ function HomePage() {
               <a href="/event#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
             </motion.div>
             <motion.ul className="hero-stats" aria-label="Club at a glance" variants={introItemVariants}>
-              <li><CountUp value={programs.length} /><span>core programs</span></li>
-              <li><CountUp value={6} /><span>classes represented</span></li>
-              <li><CountUp value={coreValues.length} /><span>guiding values</span></li>
+              <li><CountUp value={programs.length} /><span className="hero-stat-label">core programs</span></li>
+              <li><CountUp value={6} /><span className="hero-stat-label">classes represented</span></li>
+              <li><CountUp value={coreValues.length} /><span className="hero-stat-label">guiding values</span></li>
             </motion.ul>
           </motion.div>
-          <motion.figure
-            className="hero-art"
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: easeOutExpo, delay: 0.25 }}
-          >
-            {/* Gentle, endless float once the entrance has finished. */}
-            <motion.img
-              src={heroIllustration}
-              alt="Illustration of a head in profile with green leaves growing from it, captioned Mental Health Matters"
-              width="500"
-              height="500"
-              fetchPriority="high"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, ease: 'easeInOut', repeat: Infinity, delay: 1.2 }}
-            />
-          </motion.figure>
         </div>
       </section>
 
