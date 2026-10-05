@@ -2926,14 +2926,22 @@ input {
     width: min(100% - 1.25rem, 1120px);
   }
 
-  /* Same curve, scaled to 62.5% so the bar keeps more of a narrow screen's width. */
-  .site-header {
-    --notch-flare: 44px;
-    --notch-cap: 70px;
+  /* Phones: a plain, straight, full-width bar instead of the curved notch. */
+  .site-header .nav-wrap {
+    width: 100%;
+    padding-inline: 1rem;
+    filter: drop-shadow(0 6px 14px rgb(4 32 24 / 20%));
   }
 
-  .site-header .nav-wrap {
-    padding-inline: 1.25rem;
+  .site-header .nav-wrap::before {
+    inset: 0;
+    mask-image: none;
+  }
+
+  /* The dropdown spans the screen with a small margin, rather than a narrow centred box. */
+  .site-header .main-nav {
+    width: auto;
+    margin-inline: 0.75rem;
   }
 
   .hero {

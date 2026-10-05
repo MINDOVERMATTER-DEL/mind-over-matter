@@ -87,6 +87,7 @@ function getActiveNavigationHref(pathname) {
 const COMPACT_QUERY = '(width <= 920px)';
 const SHOW_NEAR_TOP = 120;
 const SCROLL_JITTER = 4;
+const MENU_CLOSE_SCROLL = 80;
 const easeOutExpo = [0.22, 1, 0.36, 1];
 
 const headerVariants = {
@@ -228,9 +229,21 @@ function Header() {
   const headerRef = useRef(null);
   const activeHref = getActiveNavigationHref(window.location.pathname);
   const { scrollY } = useScroll();
+  // Where the page was scrolled to when the menu opened (null while it's closed).
+  const menuOpenedAt = useRef(null);
+
+  useEffect(() => {
+    menuOpenedAt.current = menuOpen ? window.scrollY : null;
+  }, [menuOpen]);
 
   // Hide while scrolling down, reveal on any scroll up, and always show near the top of the page.
   useMotionValueEvent(scrollY, 'change', (current) => {
+    // With the menu open, ignore the small movements phones make on their own (momentum, the address bar
+    // resizing, the bounce at the page edge); only a deliberate scroll closes it.
+    if (menuOpenedAt.current !== null) {
+      if (Math.abs(current - menuOpenedAt.current) > MENU_CLOSE_SCROLL) setMenuOpen(false);
+      return;
+    }
     const delta = current - (scrollY.getPrevious() ?? 0);
     if (current < SHOW_NEAR_TOP) {
       setHidden(false);
