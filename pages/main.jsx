@@ -2,7 +2,7 @@ import { Component, createContext, useCallback, useContext, useEffect, useRef, u
 import { createRoot } from 'react-dom/client';
 import {
   ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
-  Clock, Confetti, DownloadSimple, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
+  Clock, Confetti, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
   Handshake, Heart, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
   Newspaper, NotePencil, Package, PencilSimple, Phone, Plant, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
   SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Truck, UsersThree, WhatsappLogo, X, XLogo,
@@ -22,13 +22,16 @@ import {
   starterProducts,
 } from '../data/merch.js';
 import {
-  approach, contact, coreValues, executiveCommittee, funding, governanceFacts, impact, logoSymbolism, mission,
-  objectives, preamble, problems, programs, purpose, quote, rules, siteCredit, socialLinks, team, vision, waysToJoin,
+  approach, contact, coreValues, funding, impact, logoSymbolism, mission,
+  objectives, preamble, problems, programs, purpose, quote, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
 import reaganPhoto from '../assets/images/team/reagan-kirwa.webp';
 import rogersPhoto from '../assets/images/team/rogers-kuria.webp';
 import krystalPhoto from '../assets/images/team/krystal-karan.webp';
+import jamesPhoto from '../assets/images/team/james-mvoi.webp';
+import clubGroupPhoto from '../assets/images/community/club-group.webp';
+import supportSessionPhoto from '../assets/images/community/support-session.webp';
 import heroIllustration from '../assets/images/illustrations/mental-health-matters.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
@@ -63,7 +66,7 @@ const icons = {
   users: UsersThree,
 };
 
-const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto };
+const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto, james: jamesPhoto };
 
 const ICON_DEFAULTS = { weight: 'duotone' };
 
@@ -83,11 +86,10 @@ function pageHref(page) {
   return page === 'index' ? '/' : `/${page}`;
 }
 
-// Which menu item to underline: articles belong to Blog, Governance to About Us.
+// Which menu item to underline: articles belong to Blog.
 function getActiveNavigationHref(pathname) {
   const page = getPageName(pathname);
   if (page === 'article') return '/blog';
-  if (page === 'governance') return '/about-us';
   return pageHref(page);
 }
 
@@ -134,7 +136,7 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 // blog posts arriving from the database). The visual states live in styles.css under [data-reveal].
 const REVEAL_SELECTOR = [
   '.section-heading', '.feature-card', '.about-card', '.team-card', '.post-card', '.program-card', '.event-card',
-  '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase',
+  '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase', '.photo-tile',
   '.contact-card', '.contact-form-card', '.archive-empty', '.two-col > div:not(.section-heading)',
 ].join(', ');
 const REVEAL_STAGGER_MS = 80;
@@ -449,8 +451,6 @@ function Footer() {
           <h2>The club</h2>
           <ul>
             <li><a className="footer-link" href="/about-us#get-involved">Get involved</a></li>
-            <li><a className="footer-link" href="/governance">Executive Committee</a></li>
-            <li><a className="footer-link" href="/governance">Class Representative Council</a></li>
             <li><a className="footer-link" href={articlesPdf} download>Articles of Association (PDF)</a></li>
             <li><a className="footer-link" href="/privacy" aria-current={activeHref === '/privacy' ? 'page' : undefined}>Privacy policy</a></li>
           </ul>
@@ -738,6 +738,20 @@ function HomePage() {
       </section>
 
       <section className="section">
+        <div className="container">
+          <div className="section-heading">
+            <p className="eyebrow">Our community</p>
+            <h2>Real students, real conversations.</h2>
+            <p className="lede">Every gathering is a chance to talk openly, listen without judgement, and leave feeling a little less alone.</p>
+          </div>
+          <div className="photo-mosaic">
+            <ClubPhoto src={clubGroupPhoto} alt="Mind Over Matter members gathered together in a lecture hall" caption="The Mind Over Matter family" width="1280" height="960" wide />
+            <ClubPhoto src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" caption="Conversations that matter" width="960" height="1280" />
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="container two-col">
           <div className="section-heading">
             <p className="eyebrow">Why we exist</p>
@@ -807,6 +821,16 @@ function HomePage() {
         </div>
       </section>
     </PageLayout>
+  );
+}
+
+// A photo from club life, with a short caption over its lower corner.
+function ClubPhoto({ src, alt, caption, width, height, wide = false, band = false }) {
+  return (
+    <figure className={`photo-tile${wide ? ' photo-tile-wide' : ''}${band ? ' photo-tile-band' : ''}`}>
+      <img className={`photo-tile-img${band ? ' photo-tile-band-img' : ''}`} src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
   );
 }
 
@@ -1087,6 +1111,12 @@ function AboutPage() {
     <PageLayout pageClass="page-main">
       <PageHero eyebrow="About us" title="Built by students, for students." lede={preamble} />
 
+      <section className="section section-compact">
+        <div className="container">
+          <ClubPhoto src={clubGroupPhoto} alt="Mind Over Matter members gathered together in a lecture hall" caption="Our members at a club gathering" width="1280" height="960" band />
+        </div>
+      </section>
+
       <section className="section">
         <div className="container about-grid">
           <article className="about-card"><span className="journal-tag">Our purpose</span><h3>Mental health, valued and protected.</h3><p>{purpose}</p></article>
@@ -1157,9 +1187,6 @@ function AboutPage() {
           <div className="feature-grid">
             {logoSymbolism.map((item) => <FeatureCard key={item.name} title={item.name} text={item.text} icon="sprout" />)}
           </div>
-          <div className="hero-actions">
-            <a href="/governance" className="button button-ghost">How the club is run <ArrowUpRight size={17} aria-hidden="true" /></a>
-          </div>
         </div>
       </section>
 
@@ -1172,6 +1199,7 @@ function AboutPage() {
         <div className="feature-grid feature-grid-3">
           {waysToJoin.map((item) => <FeatureCard key={item.title} {...item} />)}
         </div>
+        <ClubPhoto src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" caption="There’s a seat for you" width="960" height="1280" band />
         <div className="hero-actions">
           <a href="/contact-us" className="button button-primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></a>
         </div>
@@ -1184,63 +1212,6 @@ function AboutPage() {
         </div>
       </div></section>
 
-      <section className="section"><div className="container two-col">
-        <div className="section-heading">
-          <p className="eyebrow">Lead with us</p>
-          <h2>Interested in a leadership role?</h2>
-        </div>
-        <div>
-          <p className="lede">Executive Committee positions are filled through nomination, which may be opened to all members, with approval by the existing committee. Every medical class, Year 1 through Year 6, also has its own class representative.</p>
-          <div className="hero-actions">
-            <a href="/governance" className="button button-ghost">See all roles <ArrowUpRight size={17} aria-hidden="true" /></a>
-          </div>
-        </div>
-      </div></section>
-    </PageLayout>
-  );
-}
-
-function GovernancePage() {
-  return (
-    <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Governance" title="How Mind Over Matter is run." lede="Our Articles of Association set out a transparent, accountable structure, so every class has a voice and every decision is made openly." />
-
-      <section className="section">
-        <div className="container">
-          <div className="section-heading"><p className="eyebrow">Executive Committee</p><h2>The leadership team and what each role does.</h2></div>
-          <div className="role-grid">
-            {executiveCommittee.map((member) => (
-              <article className="about-card" key={member.role}>
-                <h3>{member.role}</h3>
-                <ul className="check-list check-list-compact">
-                  {member.duties.map((duty) => <li key={duty}>{duty}</li>)}
-                </ul>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section alt-section">
-        <div className="container">
-          <div className="section-heading"><p className="eyebrow">Wider structure</p><h2>Representation from every year.</h2></div>
-          <div className="about-grid">
-            {governanceFacts.map((item) => <article className="about-card" key={item.title}><span className="journal-tag">Structure</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="section-heading"><p className="eyebrow">Key rules</p><h2>Appointments, voting, and meetings.</h2></div>
-          <div className="about-grid">
-            {rules.map((item) => <article className="about-card" key={item.title}><h3>{item.title}</h3><p>{item.text}</p></article>)}
-          </div>
-          <div className="hero-actions">
-            <a href={articlesPdf} download className="button button-primary"><DownloadSimple size={17} aria-hidden="true" /> Download the Articles of Association (PDF)</a>
-          </div>
-        </div>
-      </section>
     </PageLayout>
   );
 }
@@ -2185,6 +2156,13 @@ function ProductsManager({ editing, onEdit }) {
     );
   }
 
+  // Products added to the website's built-in catalogue after the first import, placed after the existing ones.
+  // A built-in product that was deleted in the dashboard shows up here again, so it can be restored.
+  const lastSortOrder = products.reduce((max, product) => Math.max(max, product.sortOrder), -1);
+  const newStarterProducts = starterProducts
+    .filter((starter) => !products.some((product) => product.id === starter.id))
+    .map((starter, index) => ({ ...starter, sortOrder: lastSortOrder + 1 + index }));
+
   async function run(task, successText) {
     setBusy(true);
     try {
@@ -2230,6 +2208,15 @@ function ProductsManager({ editing, onEdit }) {
           <p><strong>The shop is showing the starter catalogue</strong> built into the website. Import it once to edit prices, details, and photos, and to add new products.</p>
           <button type="button" className="button button-primary button-small" disabled={busy} onClick={() => run(() => importProducts(starterProducts), 'Imported the starter products. You can now edit them and add more.')}>
             {busy ? 'Importing…' : 'Import starter products'}
+          </button>
+        </div>
+      )}
+
+      {status === 'ready' && !usingStarter && newStarterProducts.length > 0 && (
+        <div className="dashboard-notice is-info starter-notice">
+          <p><strong>{newStarterProducts.length} new {newStarterProducts.length === 1 ? 'design is' : 'designs are'} ready to add:</strong> {newStarterProducts.map((product) => product.name).join(', ')}. They’ll go to the end of the shop, and you can edit or hide them afterwards.</p>
+          <button type="button" className="button button-primary button-small" disabled={busy} onClick={() => run(() => importProducts(newStarterProducts), `Added ${newStarterProducts.length} new ${newStarterProducts.length === 1 ? 'product' : 'products'} to the shop.`)}>
+            {busy ? 'Adding…' : 'Add to shop'}
           </button>
         </div>
       )}
@@ -3216,7 +3203,6 @@ const pageTitles = {
   'blog': 'Blog | Mind Over Matter',
   'article': 'Mind Over Matter | Article',
   'about-us': 'About Us | Mind Over Matter',
-  'governance': 'Governance | Mind Over Matter',
   'merch': 'Merch | Mind Over Matter',
   'contact-us': 'Contact Us | Mind Over Matter',
   'privacy': 'Privacy Policy | Mind Over Matter',
@@ -3349,8 +3335,7 @@ function App() {
     'blog': ArchivePage,
     'article': ArticlePage,
     'about-us': AboutPage,
-    'governance': GovernancePage,
-    'merch': MerchPage,
+      'merch': MerchPage,
     'contact-us': ContactPage,
     'privacy': PrivacyPage,
     'admin': AdminPage,

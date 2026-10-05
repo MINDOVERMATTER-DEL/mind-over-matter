@@ -1820,18 +1820,83 @@ input {
   color: var(--muted);
 }
 
-.role-grid {
+.section .hero-actions {
+  margin-top: 1.75rem;
+}
+
+/* Photos from club life: a wide + tall pair on the home page, or a single wide band. */
+.photo-mosaic {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  grid-template-rows: clamp(300px, 38vw, 480px);
   gap: 1.25rem;
 }
 
-.role-grid .about-card h3 {
+.photo-tile {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.photo-tile-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 75%;
+  scale: var(--photo-zoom, 1);
+  transition: scale 0.9s var(--ease-out);
+}
+
+.photo-tile:hover {
+  --photo-zoom: 1.04;
+}
+
+.photo-tile figcaption {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background: rgb(6 30 24 / 62%);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.photo-tile-band {
+  margin-top: 1.75rem;
+}
+
+.photo-tile-band-img {
+  height: auto;
+  aspect-ratio: 21 / 9;
+  object-position: center 70%;
+}
+
+.section-compact > .container > .photo-tile-band {
   margin-top: 0;
 }
 
-.section .hero-actions {
-  margin-top: 1.75rem;
+@media (width <= 760px) {
+  .photo-mosaic {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .photo-tile-img {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .photo-tile-band-img {
+    aspect-ratio: 16 / 10;
+  }
 }
 
 .logo-showcase {
@@ -3596,7 +3661,6 @@ input {
   .about-grid,
   .feature-grid,
   .team-grid,
-  .role-grid,
   .admin-form-row,
   .list-item,
   .archive-item {

@@ -14,6 +14,14 @@ import teeGreenWhiteFront from '../assets/images/merch/tee-green-white-print-fro
 import teeGreenWhiteBack from '../assets/images/merch/tee-green-white-print-back.webp';
 import teeGreenBlackFront from '../assets/images/merch/tee-green-black-print-front.webp';
 import teeGreenBlackBack from '../assets/images/merch/tee-green-black-print-back.webp';
+import teeWhiteBlackFront from '../assets/images/merch/tee-white-black-print-front.webp';
+import teeWhiteBlackBack from '../assets/images/merch/tee-white-black-print-back.webp';
+import teeWhiteGreenFront from '../assets/images/merch/tee-white-green-print-front.webp';
+import teeWhiteGreenBack from '../assets/images/merch/tee-white-green-print-back.webp';
+import capEmblem from '../assets/images/merch/cap-emblem.webp';
+import capWordmark from '../assets/images/merch/cap-wordmark.webp';
+import bucketHatEmblem from '../assets/images/merch/buckethat-emblem.webp';
+import bucketHatWordmark from '../assets/images/merch/buckethat-wordmark.webp';
 
 export const merchTagline = 'Cultivating a Calm Amidst the Chaos';
 
@@ -35,6 +43,14 @@ const builtInImages = {
   'tee-green-white-print-back': teeGreenWhiteBack,
   'tee-green-black-print-front': teeGreenBlackFront,
   'tee-green-black-print-back': teeGreenBlackBack,
+  'tee-white-black-print-front': teeWhiteBlackFront,
+  'tee-white-black-print-back': teeWhiteBlackBack,
+  'tee-white-green-print-front': teeWhiteGreenFront,
+  'tee-white-green-print-back': teeWhiteGreenBack,
+  'cap-emblem': capEmblem,
+  'cap-wordmark': capWordmark,
+  'buckethat-emblem': bucketHatEmblem,
+  'buckethat-wordmark': bucketHatWordmark,
 };
 
 // Turns a stored image reference into something an <img> can show.
@@ -45,8 +61,13 @@ export function resolveImage(src) {
 const CLOTHING_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const HOODIE_PRICE = 2000;
 const TEE_PRICE = 550;
+const CAP_PRICE = 350;
+const BUCKET_HAT_PRICE = 500;
+const ONE_SIZE = ['One size'];
 const hoodieDetails = ['Pullover hoodie with drawstring hood', 'Front kangaroo pocket', 'Emblem printed on the left upper chest'];
 const teeDetails = ['Classic crew-neck T-shirt', 'Emblem printed on the left upper chest'];
+const capDetails = ['Structured six-panel cap with a curved peak', 'Adjustable strap at the back'];
+const bucketHatDetails = ['Soft cotton bucket hat with a stitched brim', 'Side air vents'];
 const view = (key, label) => ({ src: `asset:${key}`, label });
 
 // The starter catalogue: shown until products are imported in the dashboard, then used for that import.
@@ -110,6 +131,66 @@ export const starterProducts = [
     images: [view('tee-green-black-print-front', 'Front'), view('tee-green-black-print-back', 'Back')],
     description: `Signature green with a bold black emblem on the chest and our motto on the back: “${merchTagline}”.`,
     details: [...teeDetails, 'Black script motto on the upper back'],
+  },
+  {
+    id: 'tee-white-black-print',
+    name: 'White T-shirt, black print',
+    category: 'T-shirts',
+    price: TEE_PRICE,
+    sizes: CLOTHING_SIZES,
+    images: [view('tee-white-black-print-front', 'Front'), view('tee-white-black-print-back', 'Back')],
+    description: `Crisp white with a black emblem on the chest and our motto on the back: “Mind over Matter: ${merchTagline}”.`,
+    details: [...teeDetails, 'Black script motto on the upper back'],
+  },
+  {
+    id: 'tee-white-green-print',
+    name: 'White T-shirt, green print',
+    category: 'T-shirts',
+    price: TEE_PRICE,
+    sizes: CLOTHING_SIZES,
+    images: [view('tee-white-green-print-front', 'Front'), view('tee-white-green-print-back', 'Back')],
+    description: `Crisp white with the emblem in our signature green on the chest and our motto on the back: “${merchTagline}”.`,
+    details: [...teeDetails, 'Green script motto on the upper back'],
+  },
+  {
+    id: 'cap-emblem',
+    name: 'White cap, emblem',
+    category: 'Caps',
+    price: CAP_PRICE,
+    sizes: ONE_SIZE,
+    images: [view('cap-emblem', 'Front')],
+    description: `A white cap with the full Mind Over Matter emblem on the front, ringed with our motto: “${merchTagline}”.`,
+    details: [...capDetails, 'Circular emblem printed on the front'],
+  },
+  {
+    id: 'cap-wordmark',
+    name: 'White cap, wordmark',
+    category: 'Caps',
+    price: CAP_PRICE,
+    sizes: ONE_SIZE,
+    images: [view('cap-wordmark', 'Front')],
+    description: 'A white cap with the colourful “Mind over Matter” wordmark across the front.',
+    details: [...capDetails, 'Mind over Matter wordmark printed on the front'],
+  },
+  {
+    id: 'buckethat-emblem',
+    name: 'Bucket hat, emblem',
+    category: 'Bucket hats',
+    price: BUCKET_HAT_PRICE,
+    sizes: ONE_SIZE,
+    images: [view('buckethat-emblem', 'Front')],
+    description: 'A light grey bucket hat with the Mind Over Matter emblem on the front. Easy shade for days on campus.',
+    details: [...bucketHatDetails, 'Circular emblem printed on the front'],
+  },
+  {
+    id: 'buckethat-wordmark',
+    name: 'Bucket hat, wordmark',
+    category: 'Bucket hats',
+    price: BUCKET_HAT_PRICE,
+    sizes: ONE_SIZE,
+    images: [view('buckethat-wordmark', 'Front')],
+    description: 'A light grey bucket hat with the colourful “Mind over Matter” wordmark across the front.',
+    details: [...bucketHatDetails, 'Mind over Matter wordmark printed on the front'],
   },
 ].map((product, index) => ({ ...product, available: true, sortOrder: index }));
 

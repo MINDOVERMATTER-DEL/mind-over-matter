@@ -7,6 +7,8 @@ Every image the website uses lives in this folder.
 | `logo/` | The club logo (emblem, full logo, favicon, phone home-screen icon). `logo-original.jpg` is the source taken from the Articles of Association. |
 | `team/` | Photos of committee members and founders. |
 | `illustrations/` | Artwork and graphics, such as the home page illustration. |
+| `community/` | Photos of club life (gatherings, sessions) used on the Home and About pages. Full-size originals are in `community/originals/`. |
+| `merch/` | Product photos for the shop, cut from the design sheets. |
 
 Add new folders as needed (for example `events/` or `blog/`).
 

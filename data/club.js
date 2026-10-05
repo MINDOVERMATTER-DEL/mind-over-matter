@@ -141,10 +141,10 @@ export const team = [
     bio: 'Krystal is the voice of the club online. She manages our social media and communications, making sure everything we share is empathetic, inclusive, and true to our values.',
   },
   {
-    name: null,
+    name: 'James Mvoi',
     role: 'Head of Strategic Development & Partnerships',
-    photo: null,
-    bio: 'Leads long-term planning and builds partnerships with NGOs and mental health organisations to grow what the club can offer. Announcement coming soon.',
+    photo: 'james',
+    bio: 'James leads long-term planning and builds partnerships with NGOs and mental health organisations, growing what the club can offer and making sure our programs stay relevant to students.',
   },
 ];
 
@@ -164,75 +164,4 @@ export const funding = [
   { title: 'Membership fees', text: 'A sliding-scale fee lets every student access our programs according to their financial ability.' },
   { title: 'Grants and donations', text: 'We seek funding from foundations, organizations, and individuals who support our mission.' },
   { title: 'Partnerships', text: 'We collaborate with mental health organizations and professionals to deliver services and raise awareness.' },
-];
-
-export const executiveCommittee = [
-  {
-    role: 'Chairperson',
-    duties: [
-      'Serves as the official head and chief representative of the Club.',
-      'Presides over all Executive Committee and General Meetings.',
-      'Provides strategic direction and leadership.',
-      'Acts as the primary liaison with high-level external partners.',
-    ],
-  },
-  {
-    role: 'Vice Chairperson, Administration & Finance',
-    duties: [
-      'Chief administrative officer: human resources, member records, and internal organization.',
-      'Manages all financial affairs, including budgeting, bookkeeping, and financial reporting.',
-      'Assumes the duties of the Chairperson in their absence.',
-    ],
-  },
-  {
-    role: 'Vice Chairperson, Programs & Initiatives',
-    duties: [
-      'Plans and runs all internal events, workshops, and awareness campaigns.',
-      'Manages logistics for all approved programs and events.',
-      'Leads the teams responsible for program delivery and member engagement.',
-      'Works with the VC, Strategic Development to implement new projects.',
-    ],
-  },
-  {
-    role: 'Vice Chairperson, Public Relations & Communications',
-    duties: [
-      'Chief spokesperson for the Club in external forums.',
-      'Oversees public relations and crisis communication strategies.',
-      'Manages official channels, including the website, email, and social media.',
-      'Leads the social media team and content creation.',
-      'Ensures all messaging is empathetic, inclusive, and true to our Core Values.',
-    ],
-  },
-  {
-    role: 'Vice Chairperson, Strategic Development & Partnerships',
-    duties: [
-      'Leads the creation and development of long-term programs and strategic initiatives.',
-      'Conducts needs assessments and gathers feedback so activities stay relevant.',
-      'Builds relationships with strategic partners such as NGOs and professional mental health bodies.',
-      'Hands approved initiatives to the VC, Programs & Initiatives for execution.',
-    ],
-  },
-  {
-    role: 'Voting Representatives (Years 1–3 and Years 4–6)',
-    duties: [
-      'Elected from the Class Representative Council, one for the lower and one for the upper classes.',
-      'Full voting members who bring the student body’s perspective to leadership decisions.',
-      'Chair the Class Representative Council meetings.',
-    ],
-  },
-];
-
-export const governanceFacts = [
-  { title: 'Class Representative Council', text: 'Six representatives, one from each medical class (Year 1 to Year 6), linking the Executive Committee directly to every cohort.' },
-  { title: 'Ex officio member', text: 'The SCOMH Local Officer sits on the Executive Committee to keep us aligned with MSAKE nationally and IFMSA internationally, and casts the deciding vote in a tie.' },
-  { title: 'Patron', text: 'A faculty member or esteemed professional may be appointed to advise and mentor the Club.' },
-];
-
-export const rules = [
-  { title: 'Appointments', text: 'Executive positions are filled by nomination, which may be opened to the general membership. Nominees are approved by a simple majority of the Executive Committee.' },
-  { title: 'Decision making', text: 'Each voting member has one vote. Motions pass by simple majority when quorum (50% + 1 of voting members) is met.' },
-  { title: 'Meetings', text: 'The Executive Committee meets at least once a month. Ad hoc meetings need 48 hours’ notice and may be called by the Chair or any two members.' },
-  { title: 'Program year', text: 'Our fiscal and program year runs from 1 September to 31 August.' },
-  { title: 'Accountability', text: 'Members may be removed for resignation (two weeks’ notice), a vote of no confidence, failure to uphold standards, or gross misconduct.' },
-  { title: 'Amendments', text: 'Any voting member may table an amendment. It is adopted by simple majority of the Executive Committee.' },
 ];

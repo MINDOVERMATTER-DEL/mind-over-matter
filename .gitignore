@@ -15,3 +15,6 @@ dist/
 *.log
 Thumbs.db
 .DS_Store
+
+# Full merch design sheet (33 MB, too big for the repo). The shop photos are cut from it into assets/images/merch/.
+documents/merch/
