@@ -1756,6 +1756,23 @@ input {
   outline-offset: 4px;
 }
 
+/* A role still to be filled: dashed portrait circle with a group icon. */
+.team-placeholder {
+  display: grid;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 1rem;
+  place-items: center;
+  border: 2px dashed var(--card-border);
+  border-radius: 50%;
+  background: rgb(13 122 92 / 6%);
+  color: var(--accent-bright);
+}
+
+.team-card.is-vacant {
+  border-style: dashed;
+}
+
 .team-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
@@ -1884,7 +1901,7 @@ input {
   font-weight: 600;
 }
 
-.admin-form input:not([type="file"]),
+.admin-form input:not([type="file"], [type="checkbox"]),
 .admin-form select,
 .admin-form textarea {
   width: 100%;
@@ -2676,6 +2693,89 @@ input {
 .merch-banner p {
   margin: 0;
   color: var(--muted);
+}
+
+/* Dashboard merch (products) */
+.starter-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.starter-notice p {
+  flex: 1 1 22rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.product-row-thumb {
+  display: block;
+  width: 48px;
+  height: 60px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.product-row-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dashboard-row.is-hidden-product {
+  opacity: 0.6;
+}
+
+.admin-field-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.product-image-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 0.25rem 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.product-image-item {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.product-image-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.product-image-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.admin-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.admin-checkbox-input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--nav-green);
 }
 
 /* Dashboard orders */

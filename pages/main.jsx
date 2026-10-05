@@ -12,19 +12,23 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { posts as samplePosts } from '../data/posts.js';
 import {
-  blogCategories, categories, categoryLabel, compressCover, createEvent, createPost, describeError, eventTypes, fetchEvents, fetchPosts,
-  deliveryOptions, fetchMessages, fetchOrders, isFirebaseConfigured, messageTopics, orderStatuses, placeOrder,
-  removeEvent, removeMessage, removeOrder, removePost, resetPassword, sendMessage, setMessageRead, setOrderStatus, signIn,
-  signOut, updateEvent, updatePost, watchAdmin,
+  blogCategories, categories, categoryLabel, compressCover, compressProductImage, createEvent, createPost, createProduct, describeError, eventTypes, fetchEvents, fetchPosts,
+  deliveryOptions, fetchMessages, fetchOrders, fetchProducts, importProducts, isFirebaseConfigured, messageTopics, orderStatuses, placeOrder,
+  removeEvent, removeMessage, removeOrder, removePost, removeProduct, resetPassword, sendMessage, setMessageRead, setOrderStatus, signIn,
+  signOut, updateEvent, updatePost, updateProduct, watchAdmin,
 } from '../data/blog.js';
-import { findProduct, formatPrice, merchProducts, merchTagline, orderTotal } from '../data/merch.js';
 import {
-  approach, contact, coreValues, executiveCommittee, founders, funding, governanceFacts, impact, logoSymbolism, mission,
-  objectives, preamble, problems, programs, purpose, quote, rules, siteCredit, socialLinks, vision, waysToJoin,
+  formatPrice, imageLabels, MAX_PRODUCT_IMAGES, merchTagline, orderTotal, productCategories, resolveImage, sizeOptions,
+  starterProducts,
+} from '../data/merch.js';
+import {
+  approach, contact, coreValues, executiveCommittee, funding, governanceFacts, impact, logoSymbolism, mission,
+  objectives, preamble, problems, programs, purpose, quote, rules, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
 import reaganPhoto from '../assets/images/team/reagan-kirwa.webp';
-import cliffPhoto from '../assets/images/team/cliff-sabaniah.webp';
+import rogersPhoto from '../assets/images/team/rogers-kuria.webp';
+import krystalPhoto from '../assets/images/team/krystal-karan.webp';
 import heroIllustration from '../assets/images/illustrations/mental-health-matters.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
@@ -59,7 +63,7 @@ const icons = {
   users: UsersThree,
 };
 
-const founderPhotos = { faith: faithPhoto, reagan: reaganPhoto, cliff: cliffPhoto };
+const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto };
 
 const ICON_DEFAULTS = { weight: 'duotone' };
 
@@ -542,14 +546,28 @@ function useRemoteList(fetcher, samples) {
 
 const PostsContext = createContext(null);
 const EventsContext = createContext(null);
+const ProductsContext = createContext(null);
 
 function SiteDataProvider({ children }) {
   const posts = useRemoteList(fetchPosts, samplePosts);
   const events = useRemoteList(fetchEvents, sampleEvents);
+  const products = useRemoteList(fetchProducts, starterProducts);
+  // Until products have been imported in the dashboard, the shop shows the built-in starter catalogue. It is
+  // also the fallback if products can't be loaded, so the shop never goes blank.
+  const usingStarter = products.status === 'error' || (products.status === 'ready' && !products.items.length);
+  const productValue = {
+    products: usingStarter ? starterProducts : products.items,
+    status: usingStarter ? 'ready' : products.status,
+    loadFailed: products.status === 'error',
+    refresh: products.refresh,
+    usingStarter: usingStarter || !isFirebaseConfigured,
+  };
   return (
     <PostsContext.Provider value={{ posts: posts.items, status: posts.status, refresh: posts.refresh }}>
       <EventsContext.Provider value={{ events: events.items, status: events.status, refresh: events.refresh }}>
-        {children}
+        <ProductsContext.Provider value={productValue}>
+          {children}
+        </ProductsContext.Provider>
       </EventsContext.Provider>
     </PostsContext.Provider>
   );
@@ -563,10 +581,18 @@ function useEvents() {
   return useContext(EventsContext);
 }
 
+// All products (admins see hidden ones too); `shopProducts` lists only those shown in the shop.
+function useProducts() {
+  const context = useContext(ProductsContext);
+  const findProduct = (id) => context.products.find((product) => product.id === id) ?? null;
+  const shopProducts = context.products.filter((product) => product.available && product.images.length);
+  return { ...context, findProduct, shopProducts };
+}
+
 // Shown only until Firebase is connected.
 const sampleEvents = [
   { id: 'sample-1', date: '2026-11-12', time: '14:00', type: 'Workshop', title: 'Anxiety Management Workshop', description: 'Practical tools for recognizing anxiety, calming the body, and coping during exam season.', venue: '' },
-  { id: 'sample-2', date: '2026-11-27', time: '17:30', type: 'Support group', title: 'Peer Support Circle', description: 'A confidential, judgment-free meet-up for students facing similar challenges, guided by trained peer counselors.', venue: '' },
+  { id: 'sample-2', date: '2026-11-27', time: '17:30', type: 'Support group', title: 'Support Circle', description: 'A confidential, judgment-free meet-up for students facing similar challenges.', venue: '' },
   { id: 'sample-3', date: '2026-12-09', time: '18:30', type: 'Social', title: 'Game Night & Dinner', description: 'Unwind, meet new people, and build the sense of belonging that keeps us all going.', venue: '' },
 ];
 
@@ -730,7 +756,7 @@ function HomePage() {
             <p className="eyebrow">Our approach</p>
             <h2>A new way of supporting each other.</h2>
           </div>
-          <div className="feature-grid">
+          <div className="feature-grid feature-grid-3">
             {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
           </div>
           <div className="hero-actions">
@@ -984,7 +1010,7 @@ function EventsPage() {
   const past = events.filter((event) => !isUpcoming(event)).reverse().slice(0, PAST_EVENTS_SHOWN);
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="Upcoming events first, then everything we offer year-round: peer counselling, professional care, support groups, and community." />
+      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="Upcoming events first, then everything we offer year-round: professional care, support groups, workshops, and community." />
 
       <section className="section">
         <div className="container">
@@ -1033,8 +1059,8 @@ function EventsPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">How we work</p><h2>Four pillars behind every program.</h2></div>
-          <div className="feature-grid">
+          <div className="section-heading"><p className="eyebrow">How we work</p><h2>The pillars behind every program.</h2></div>
+          <div className="feature-grid feature-grid-3">
             {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
           </div>
         </div>
@@ -1047,7 +1073,7 @@ function EventsPage() {
             {impact.map((item) => <article className="about-card" key={item.title}><span className="journal-tag">Impact</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
           </div>
           <div className="hero-actions">
-            <a href="/contact-us?topic=counselling" className="button button-primary">Book a peer counselling session <ArrowRight size={17} aria-hidden="true" /></a>
+            <a href="/contact-us" className="button button-primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></a>
           </div>
         </div>
       </section>
@@ -1104,12 +1130,16 @@ function AboutPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">Meet the team</p><h2>The people who started it.</h2></div>
+          <div className="section-heading"><p className="eyebrow">Meet the team</p><h2>The faces behind the organisation.</h2></div>
           <div className="team-grid">
-            {founders.map((person) => (
-              <article className="team-card" key={person.name}>
-                <img src={founderPhotos[person.photo]} alt={`Portrait of ${person.name}`} width="320" height="320" loading="lazy" decoding="async" />
-                <h3>{person.name}</h3>
+            {team.map((person) => (
+              <article className={`team-card${person.name ? '' : ' is-vacant'}`} key={person.role}>
+                {person.photo ? (
+                  <img src={teamPhotos[person.photo]} alt={`Portrait of ${person.name}`} width="320" height="320" loading="lazy" decoding="async" />
+                ) : (
+                  <span className="team-placeholder" aria-hidden="true"><UsersThree size={56} /></span>
+                )}
+                <h3>{person.name ?? 'To be announced'}</h3>
                 <span className="post-tag">{person.role}</span>
                 <p>{person.bio}</p>
               </article>
@@ -1215,10 +1245,10 @@ function GovernancePage() {
   );
 }
 
-// Links can preselect the topic, e.g. /contact-us?topic=counselling.
+// Links can preselect the topic, e.g. /contact-us?topic=membership.
 const topicFromLink = {
-  counselling: 'Peer counselling',
   membership: 'Membership',
+  merch: 'Merch',
   partnership: 'Partnership',
   events: 'Events',
 };
@@ -1262,9 +1292,9 @@ function ContactPage() {
 
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Contact us" title="We’re here to listen, connect, and collaborate." lede="Reach out to book a peer counselling session, ask about membership, propose a partnership, or simply say hello. Every message is treated in confidence." />
+      <PageHero eyebrow="Contact us" title="We’re here to listen, connect, and collaborate." lede="Reach out with a question, ask about membership or events, propose a partnership, or simply say hello. Every message is treated in confidence." />
       <section className="section"><div className="container contact-grid">
-        <article className="contact-card"><span className="journal-tag">Get in touch</span><h3>Talk to us.</h3><p>Students can reach out for peer counselling or support group details. Partners, NGOs, and mental health professionals: we would love to work with you.</p><ul className="contact-list">
+        <article className="contact-card"><span className="journal-tag">Get in touch</span><h3>Talk to us.</h3><p>Students can reach out about support groups, events, or membership. Partners, NGOs, and mental health professionals: we would love to work with you.</p><ul className="contact-list">
           <li><EnvelopeSimple className="contact-list-icon" size={17} aria-hidden="true" /><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
           {contact.phone && <li><Phone className="contact-list-icon" size={17} aria-hidden="true" /><a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`}>{contact.phone}</a></li>}
           <li><MapPin className="contact-list-icon" size={17} aria-hidden="true" /><span>{contact.location.name}, {contact.location.detail}, {contact.location.city}</span></li>
@@ -1545,6 +1575,7 @@ const dashboardTabs = [
   { id: 'events', label: 'Events', Icon: CalendarDots },
   { id: 'messages', label: 'Messages', Icon: EnvelopeSimple },
   { id: 'orders', label: 'Orders', Icon: Package },
+  { id: 'merch', label: 'Merch', Icon: ShoppingBag },
 ];
 
 const NO_MESSAGES = [];
@@ -1564,6 +1595,7 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
   // null shows the list; 'new' opens a blank editor; an item opens it for editing.
   const [postEditing, setPostEditing] = useState(null);
   const [eventEditing, setEventEditing] = useState(null);
+  const [productEditing, setProductEditing] = useState(null);
   const [now, setNow] = useState(() => new Date());
 
   // Keep the greeting right if the dashboard stays open across morning/afternoon/evening.
@@ -1588,6 +1620,7 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
     setTab(id);
     setPostEditing(null);
     setEventEditing(null);
+    setProductEditing(null);
   }
 
   function startPost(post = 'new') {
@@ -1665,6 +1698,7 @@ function AdminDashboard({ user, adminName, onIdleSignOut }) {
         {tab === 'events' && <EventsManager editing={eventEditing} onEdit={setEventEditing} />}
         {tab === 'messages' && <MessagesInbox messages={messages.items} status={messages.status} refresh={messages.refresh} />}
         {tab === 'orders' && <OrdersManager orders={orders.items} status={orders.status} refresh={orders.refresh} />}
+        {tab === 'merch' && <ProductsManager editing={productEditing} onEdit={setProductEditing} />}
       </div>
 
       <p className="dashboard-signed-in">Signed in as {user.email}</p>
@@ -2130,6 +2164,253 @@ function EventEditor({ event, onCancel, onSaved }) {
   );
 }
 
+function ProductsManager({ editing, onEdit }) {
+  const { products, status, refresh, usingStarter, loadFailed } = useProducts();
+  const [notice, setNotice] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  if (editing) {
+    return (
+      <ProductEditor
+        key={editing === 'new' ? 'new' : editing.id}
+        product={editing === 'new' ? null : editing}
+        nextSortOrder={products.reduce((max, product) => Math.max(max, product.sortOrder), -1) + 1}
+        onCancel={() => onEdit(null)}
+        onSaved={(text) => {
+          setNotice({ type: 'success', text });
+          onEdit(null);
+          refresh();
+        }}
+      />
+    );
+  }
+
+  async function run(task, successText) {
+    setBusy(true);
+    try {
+      await task();
+      setNotice({ type: 'success', text: successText });
+      await refresh();
+    } catch (taskError) {
+      setNotice({ type: 'error', text: describeError(taskError) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Swaps a product's position with its neighbour, which sets the order products appear in the shop.
+  function move(index, direction) {
+    const other = products[index + direction];
+    const product = products[index];
+    run(async () => {
+      await updateProduct(product.id, { ...product, sortOrder: other.sortOrder });
+      await updateProduct(other.id, { ...other, sortOrder: product.sortOrder });
+    }, `Moved “${product.name}” ${direction < 0 ? 'up' : 'down'}.`);
+  }
+
+  return (
+    <section className="dashboard-card" aria-labelledby="products-heading">
+      <div className="dashboard-card-head">
+        <div>
+          <h2 id="products-heading">Merch</h2>
+          <p>Products in the order they appear in the shop. The first three are also featured on the home page.</p>
+        </div>
+        {!usingStarter && <button type="button" className="button button-primary" onClick={() => onEdit('new')}><Plus size={17} aria-hidden="true" /> New product</button>}
+      </div>
+      <DashboardNotice notice={notice} />
+      {status === 'loading' && <div className="archive-empty" role="status"><p>Loading products…</p></div>}
+      {loadFailed && (
+        <p className="dashboard-notice is-error" role="alert">
+          Couldn’t load products from the database, so the shop is showing the starter catalogue. Check the latest security rules are published, then refresh the page.
+        </p>
+      )}
+
+      {status === 'ready' && usingStarter && !loadFailed && (
+        <div className="dashboard-notice is-info starter-notice">
+          <p><strong>The shop is showing the starter catalogue</strong> built into the website. Import it once to edit prices, details, and photos, and to add new products.</p>
+          <button type="button" className="button button-primary button-small" disabled={busy} onClick={() => run(() => importProducts(starterProducts), 'Imported the starter products. You can now edit them and add more.')}>
+            {busy ? 'Importing…' : 'Import starter products'}
+          </button>
+        </div>
+      )}
+
+      <ul className="dashboard-list">
+        {products.map((product, index) => (
+          <li key={product.id} className={`dashboard-row${product.available ? '' : ' is-hidden-product'}`}>
+            <span className="product-row-thumb">
+              {product.images[0] && <img src={resolveImage(product.images[0].src)} alt="" width="1000" height="1250" />}
+            </span>
+            <div className="dashboard-row-info">
+              <strong>{product.name}</strong>
+              <span>{product.category} · {formatPrice(product.price)}{product.available ? '' : ' · Hidden from shop'}</span>
+            </div>
+            {!usingStarter && (
+              <div className="dashboard-row-actions">
+                <button type="button" className="button button-ghost button-small" disabled={busy || index === 0} onClick={() => move(index, -1)} aria-label={`Move ${product.name} up`}>↑</button>
+                <button type="button" className="button button-ghost button-small" disabled={busy || index === products.length - 1} onClick={() => move(index, 1)} aria-label={`Move ${product.name} down`}>↓</button>
+                <button type="button" className="button button-ghost button-small" disabled={busy} onClick={() => run(() => updateProduct(product.id, { ...product, available: !product.available }), product.available ? `“${product.name}” is now hidden from the shop.` : `“${product.name}” is now in the shop.`)}>
+                  {product.available ? 'Hide' : 'Show'}
+                </button>
+                <button type="button" className="button button-ghost button-small" onClick={() => onEdit(product)}><PencilSimple size={15} aria-hidden="true" /> Edit</button>
+                <DeleteControl onDelete={() => run(() => removeProduct(product.id), `Deleted “${product.name}”.`)} />
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
+  const isEditing = Boolean(product);
+  const [images, setImages] = useState(() => product?.images ?? []);
+  const [sizes, setSizes] = useState(() => product?.sizes ?? ['S', 'M', 'L', 'XL', 'XXL']);
+  const [imageError, setImageError] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const imageInputRef = useRef(null);
+
+  async function handleImageChange(event) {
+    const files = Array.from(event.target.files ?? []).slice(0, MAX_PRODUCT_IMAGES - images.length);
+    setImageError('');
+    try {
+      const added = [];
+      for (const file of files) {
+        added.push({ src: await compressProductImage(file), label: imageLabels[Math.min(images.length + added.length, imageLabels.length - 1)] });
+      }
+      setImages((current) => [...current, ...added]);
+    } catch (imageProblem) {
+      setImageError(imageProblem.message);
+    } finally {
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  }
+
+  function updateImage(index, changes) {
+    setImages((current) => current.map((image, i) => (i === index ? { ...image, ...changes } : image)));
+  }
+
+  function moveImage(index, direction) {
+    setImages((current) => {
+      const next = [...current];
+      [next[index], next[index + direction]] = [next[index + direction], next[index]];
+      return next;
+    });
+  }
+
+  function toggleSize(size) {
+    setSizes((current) => (current.includes(size)
+      ? current.filter((entry) => entry !== size)
+      : sizeOptions.filter((option) => option === size || current.includes(option))));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (!images.length) {
+      setError('Add at least one photo.');
+      return;
+    }
+    if (!sizes.length) {
+      setError('Choose at least one size.');
+      return;
+    }
+    const fields = {
+      name: values.name,
+      category: values.category,
+      price: values.price,
+      sizes,
+      description: values.description,
+      details: values.details.split('\n'),
+      images,
+      available: values.available === 'on',
+      sortOrder: product?.sortOrder ?? nextSortOrder,
+    };
+    setBusy(true);
+    setError('');
+    try {
+      if (isEditing) await updateProduct(product.id, fields);
+      else await createProduct(fields);
+      onSaved(isEditing ? `Saved your changes to “${values.name.trim()}”.` : `Added “${values.name.trim()}” to the shop.`);
+    } catch (saveError) {
+      setError(describeError(saveError));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="dashboard-card" aria-labelledby="product-editor-heading">
+      <div className="dashboard-card-head">
+        <h2 id="product-editor-heading">{isEditing ? 'Edit product' : 'Add a product'}</h2>
+        <button type="button" className="button button-ghost button-small" onClick={onCancel}>Back to merch</button>
+      </div>
+      <form className="admin-form" onSubmit={handleSubmit}>
+        <label>Product name<input name="name" type="text" maxLength={80} required defaultValue={product?.name ?? ''} placeholder="e.g. Green bucket hat" /></label>
+        <div className="admin-form-row">
+          <label>Category
+            <select name="category" required defaultValue={product?.category ?? ''}>
+              <option value="" disabled>Choose a category</option>
+              {productCategories.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label>Price (KSh)<input name="price" type="number" min="0" step="1" required defaultValue={product?.price ?? ''} placeholder="e.g. 500" /></label>
+        </div>
+
+        <fieldset className="size-picker">
+          <legend>Sizes available <span className="admin-hint">Caps and hats usually use “One size”.</span></legend>
+          <div className="size-options">
+            {sizeOptions.map((option) => (
+              <label key={option} className={`size-option${sizes.includes(option) ? ' is-active' : ''}`}>
+                <input className="size-option-input" type="checkbox" checked={sizes.includes(option)} onChange={() => toggleSize(option)} />
+                {option}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <label>Description<textarea name="description" rows={3} maxLength={1000} required defaultValue={product?.description ?? ''} /></label>
+        <label>Features <span className="admin-hint">Optional. One per line, shown as a checklist.</span>
+          <textarea name="details" rows={4} defaultValue={(product?.details ?? []).join('\n')} />
+        </label>
+
+        <div className="admin-field">
+          <span className="admin-field-label">Photos <span className="admin-hint">Up to {MAX_PRODUCT_IMAGES}. The first photo is the main one. Photos on a plain white background look best.</span></span>
+          {images.length > 0 && (
+            <ul className="product-image-list">
+              {images.map((image, index) => (
+                <li key={`${index}-${image.src.slice(-24)}`} className="product-image-item">
+                  <img src={resolveImage(image.src)} alt="" width="1000" height="1250" />
+                  <select aria-label="Photo label" value={image.label} onChange={(event) => updateImage(index, { label: event.target.value })}>
+                    {imageLabels.map((label) => <option key={label} value={label}>{label}</option>)}
+                  </select>
+                  <div className="product-image-actions">
+                    <button type="button" className="button button-ghost button-small" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label="Move photo earlier">←</button>
+                    <button type="button" className="button button-ghost button-small" disabled={index === images.length - 1} onClick={() => moveImage(index, 1)} aria-label="Move photo later">→</button>
+                    <button type="button" className="button button-ghost button-small" onClick={() => setImages((current) => current.filter((_, i) => i !== index))} aria-label="Remove photo"><Trash size={15} aria-hidden="true" /></button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {images.length < MAX_PRODUCT_IMAGES && (
+            <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={handleImageChange} aria-label="Add photos" />
+          )}
+          {imageError && <p className="form-status error" role="alert">{imageError}</p>}
+        </div>
+
+        <label className="admin-checkbox"><input className="admin-checkbox-input" name="available" type="checkbox" defaultChecked={product?.available ?? true} /> Show in the shop</label>
+
+        <div className="dashboard-form-actions">
+          <button type="submit" className="button button-primary" disabled={busy}>{busy ? 'Saving…' : isEditing ? 'Save changes' : 'Add product'}</button>
+          <button type="button" className="button button-ghost" onClick={onCancel} disabled={busy}>Cancel</button>
+        </div>
+        <p className="form-status error" aria-live="polite">{error}</p>
+      </form>
+    </section>
+  );
+}
+
 // Kenyan numbers like "0712 345 678" or "+254 712 345 678" → "254712345678" for WhatsApp links.
 function whatsAppNumber(phone) {
   const digits = phone.replace(/\D/g, '');
@@ -2417,7 +2698,9 @@ const CartContext = createContext(null);
 function readStoredCart() {
   try {
     const stored = JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? '[]');
-    return Array.isArray(stored) ? stored.filter((item) => findProduct(item.productId)) : [];
+    return Array.isArray(stored)
+      ? stored.filter((item) => typeof item?.productId === 'string' && typeof item.size === 'string' && item.quantity > 0)
+      : [];
   } catch {
     return [];
   }
@@ -2467,12 +2750,14 @@ function useCart() {
   return useContext(CartContext);
 }
 
-// Cart items joined with their product details and current price.
+// Cart items joined with their product details and current price. Items whose product has since been removed
+// (or hidden) from the shop are left out.
 function useCartLines() {
   const { items } = useCart();
-  return items.map((item) => {
-    const product = findProduct(item.productId);
-    return { ...item, product, name: product.name, price: product.price };
+  const { shopProducts } = useProducts();
+  return items.flatMap((item) => {
+    const product = shopProducts.find((entry) => entry.id === item.productId);
+    return product ? [{ ...item, product, name: product.name, price: product.price }] : [];
   });
 }
 
@@ -2512,8 +2797,8 @@ function ProductCard({ product }) {
       <a href={`/merch?product=${product.id}`} className="product-card-link">
         <div className={`product-card-image${back ? ' has-back' : ''}`}>
           {/* The products are the page's main content, so their front photos load straight away. */}
-          <img className="product-card-photo" src={front.src} alt={`${product.name}, front`} width="1000" height="1250" decoding="async" />
-          {back && <img className="product-card-photo product-card-back" src={back.src} alt="" width="1000" height="1250" loading="lazy" decoding="async" />}
+          <img className="product-card-photo" src={resolveImage(front.src)} alt={`${product.name}, front`} width="1000" height="1250" decoding="async" />
+          {back && <img className="product-card-photo product-card-back" src={resolveImage(back.src)} alt="" width="1000" height="1250" loading="lazy" decoding="async" />}
         </div>
         <div className="product-card-body">
           <span className="post-tag">{product.category}</span>
@@ -2526,18 +2811,25 @@ function ProductCard({ product }) {
 }
 
 function MerchPage() {
+  const { shopProducts, status } = useProducts();
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('product');
-  // Keyed by product so switching products starts with a fresh size and photo choice.
-  if (productId) return <ProductPage key={productId} product={findProduct(productId)} />;
+  if (productId) {
+    if (status === 'loading') {
+      return <PageLayout pageClass="page-main"><section className="section"><div className="container"><div className="archive-empty" role="status"><p>Loading…</p></div></div></section></PageLayout>;
+    }
+    // Keyed by product so switching products starts with a fresh size and photo choice.
+    return <ProductPage key={productId} product={shopProducts.find((product) => product.id === productId) ?? null} />;
+  }
   if (params.get('view') === 'cart') return <CartPage />;
   return <ShopPage />;
 }
 
 function ShopPage() {
+  const { shopProducts, status } = useProducts();
   const [category, setCategory] = useState('All');
-  const categoryNames = ['All', ...new Set(merchProducts.map((product) => product.category))];
-  const visible = category === 'All' ? merchProducts : merchProducts.filter((product) => product.category === category);
+  const categoryNames = ['All', ...new Set(shopProducts.map((product) => product.category))];
+  const visible = category === 'All' ? shopProducts : shopProducts.filter((product) => product.category === category);
 
   return (
     <PageLayout pageClass="page-main">
@@ -2552,6 +2844,9 @@ function ShopPage() {
             </div>
             <CartSummaryLink />
           </div>
+          {status === 'loading' && <div className="archive-empty" role="status"><p>Loading merch…</p></div>}
+          {status === 'error' && <div className="archive-empty" role="alert"><h3>We couldn’t load the shop right now.</h3><p>Please check your connection and try again.</p></div>}
+          {status === 'ready' && !shopProducts.length && <div className="archive-empty"><h3>New merch is on the way.</h3><p>Check back soon.</p></div>}
           <div className="product-grid">
             {visible.map((product) => <ProductCard key={product.id} product={product} />)}
           </div>
@@ -2616,13 +2911,13 @@ function ProductPage({ product }) {
           <div className="product-layout">
             <div className="product-gallery">
               <div className="product-main-image">
-                <img className="product-main-photo" src={image.src} alt={`${product.name}, ${image.label.toLowerCase()}`} width="1000" height="1250" />
+                <img className="product-main-photo" src={resolveImage(image.src)} alt={`${product.name}, ${image.label.toLowerCase()}`} width="1000" height="1250" />
               </div>
               {product.images.length > 1 && (
                 <div className="product-thumbs" role="group" aria-label="Product views">
                   {product.images.map((view, index) => (
                     <button key={view.label} type="button" className={`product-thumb${index === imageIndex ? ' is-active' : ''}`} aria-pressed={index === imageIndex} onClick={() => setImageIndex(index)}>
-                      <img className="product-thumb-photo" src={view.src} alt="" width="1000" height="1250" />
+                      <img className="product-thumb-photo" src={resolveImage(view.src)} alt="" width="1000" height="1250" />
                       <span>{view.label}</span>
                     </button>
                   ))}
@@ -2744,7 +3039,7 @@ function CartPage() {
                 <ul className="cart-list">
                   {lines.map((line) => (
                     <li key={`${line.productId}-${line.size}`} className="cart-line">
-                      <a href={`/merch?product=${line.productId}`} className="cart-line-image"><img className="cart-line-photo" src={line.product.images[0].src} alt="" width="1000" height="1250" /></a>
+                      <a href={`/merch?product=${line.productId}`} className="cart-line-image"><img className="cart-line-photo" src={resolveImage(line.product.images[0].src)} alt="" width="1000" height="1250" /></a>
                       <div className="cart-line-info">
                         <a href={`/merch?product=${line.productId}`} className="cart-line-name">{line.name}</a>
                         <span>Size {line.size} · {formatPrice(line.price)}</span>
@@ -2792,10 +3087,13 @@ function CartPage() {
   );
 }
 
-const PROMO_PRODUCT_IDS = ['hoodie-black', 'tee-green-white-print', 'hoodie-white'];
+const PROMO_PRODUCT_COUNT = 3;
 
-// Home page section advertising the merch.
+// Home page section advertising the merch: the first products in the shop order (set in the dashboard).
 function MerchPromo() {
+  const { shopProducts } = useProducts();
+  const featured = shopProducts.slice(0, PROMO_PRODUCT_COUNT);
+  if (!featured.length) return null;
   return (
     <section className="section merch-promo-section">
       <div className="container">
@@ -2803,18 +3101,15 @@ function MerchPromo() {
           <div className="merch-promo-copy">
             <p className="eyebrow">New · Club merch</p>
             <h2>Wear the message.</h2>
-            <p>Hoodies and T-shirts carrying our motto, <em>{merchTagline}</em>. Every purchase supports our programs.</p>
+            <p>Club merch carrying our motto, <em>{merchTagline}</em>. Every purchase supports our programs.</p>
             <a href="/merch" className="button button-light"><ShoppingBag size={17} aria-hidden="true" /> Shop merch</a>
           </div>
           <div className="merch-promo-products">
-            {PROMO_PRODUCT_IDS.map((id) => {
-              const product = findProduct(id);
-              return (
-                <a key={id} href={`/merch?product=${id}`} className="merch-promo-item">
-                  <img className="merch-promo-photo" src={product.images[0].src} alt={product.name} width="1000" height="1250" loading="lazy" decoding="async" />
-                </a>
-              );
-            })}
+            {featured.map((product) => (
+              <a key={product.id} href={`/merch?product=${product.id}`} className="merch-promo-item">
+                <img className="merch-promo-photo" src={resolveImage(product.images[0].src)} alt={product.name} width="1000" height="1250" loading="lazy" decoding="async" />
+              </a>
+            ))}
           </div>
         </div>
       </div>
@@ -2824,15 +3119,17 @@ function MerchPromo() {
 
 // A smaller merch banner for other pages.
 function MerchBanner() {
-  const product = findProduct('hoodie-green');
+  const { shopProducts } = useProducts();
+  const product = shopProducts.find((entry) => entry.id === 'hoodie-green') ?? shopProducts[0];
+  if (!product) return null;
   return (
     <section className="section section-compact">
       <div className="container">
         <aside className="merch-banner" aria-label="Club merch">
-          <img className="merch-banner-photo" src={product.images[0].src} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
+          <img className="merch-banner-photo" src={resolveImage(product.images[0].src)} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
           <div>
             <h2>Rep the club at our next event.</h2>
-            <p>Mind Over Matter hoodies and T-shirts are now available.</p>
+            <p>Mind Over Matter merch is now available to order.</p>
           </div>
           <a href="/merch" className="button button-primary">Shop merch <ArrowRight size={17} aria-hidden="true" /></a>
         </aside>
@@ -2882,7 +3179,7 @@ function PrivacyPage() {
           <p>To learn which pages are useful and how quickly the site loads, we use Vercel Web Analytics and Speed Insights. They count visits anonymously and in total (for example, page views, country, and device type), without cookies and without identifying you.</p>
 
           <h2>Why we collect it</h2>
-          <p>We use your details only to read and reply to your message, for example to arrange peer counselling, answer a question, or follow up on a partnership. We rely on your consent, which you give by sending the message.</p>
+          <p>We use your details only to read and reply to your message, for example to answer a question, share event details, or follow up on a partnership or merch order. We rely on your consent, which you give by sending the message.</p>
 
           <h2>Sensitive information</h2>
           <p>Messages about mental health can be personal. Only share what you’re comfortable with. Messages are treated in confidence and are read only by authorised committee members.</p>

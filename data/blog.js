@@ -173,7 +173,7 @@ export async function removeEvent(id) {
 /* ---------- Contact messages ---------- */
 // Anyone can send a message; only admins can read, mark, or delete them (see firestore.rules).
 
-export const messageTopics = ['General question', 'Peer counselling', 'Membership', 'Partnership', 'Events', 'Other'];
+export const messageTopics = ['General question', 'Membership', 'Events', 'Merch', 'Partnership', 'Other'];
 
 function toMessage(id, data) {
   return {
@@ -214,6 +214,70 @@ export async function setMessageRead(id, read) {
 export async function removeMessage(id) {
   const { firestore, db } = await loadDatabase();
   await firestore.deleteDoc(firestore.doc(db, 'messages', id));
+}
+
+/* ---------- Merch products ---------- */
+// Anyone can read products; only admins can add, edit, or delete them (see firestore.rules).
+
+function toProduct(id, data) {
+  return {
+    id,
+    name: data.name,
+    category: data.category,
+    price: data.price ?? null,
+    sizes: data.sizes ?? [],
+    description: data.description ?? '',
+    details: data.details ?? [],
+    images: data.images ?? [],
+    available: data.available !== false,
+    sortOrder: data.sortOrder ?? 0,
+  };
+}
+
+function cleanProduct({ name, category, price, sizes, description, details, images, available, sortOrder }) {
+  return {
+    name: name.trim(),
+    category,
+    price: Number(price),
+    sizes,
+    description: description.trim(),
+    details: details.map((detail) => detail.trim()).filter(Boolean),
+    images: images.map(({ src, label }) => ({ src, label })),
+    available: Boolean(available),
+    sortOrder: Number(sortOrder) || 0,
+  };
+}
+
+export async function fetchProducts() {
+  const { firestore, db } = await loadDatabase();
+  const { collection, getDocs, orderBy, query } = firestore;
+  const snapshot = await getDocs(query(collection(db, 'products'), orderBy('sortOrder', 'asc')));
+  return snapshot.docs.map((doc) => toProduct(doc.id, doc.data()));
+}
+
+export async function createProduct(fields) {
+  const { firestore, db } = await loadDatabase();
+  await firestore.addDoc(firestore.collection(db, 'products'), { ...cleanProduct(fields), createdAt: firestore.serverTimestamp() });
+}
+
+export async function updateProduct(id, fields) {
+  const { firestore, db } = await loadDatabase();
+  await firestore.updateDoc(firestore.doc(db, 'products', id), { ...cleanProduct(fields), updatedAt: firestore.serverTimestamp() });
+}
+
+export async function removeProduct(id) {
+  const { firestore, db } = await loadDatabase();
+  await firestore.deleteDoc(firestore.doc(db, 'products', id));
+}
+
+// Copies the starter catalogue into the database (keeping the same ids, so existing carts still match).
+export async function importProducts(products) {
+  const { firestore, db } = await loadDatabase();
+  const batch = firestore.writeBatch(db);
+  products.forEach(({ id, ...fields }) => {
+    batch.set(firestore.doc(db, 'products', id), { ...cleanProduct(fields), createdAt: firestore.serverTimestamp() });
+  });
+  await batch.commit();
 }
 
 /* ---------- Merch orders ---------- */
@@ -336,8 +400,17 @@ export async function signOut() {
 
 /* ---------- Helpers ---------- */
 
+// Product photos are stored inside the product, up to MAX_PRODUCT_IMAGES each, so they are kept smaller than
+// blog covers to stay under Firestore's 1 MiB per document.
+const PRODUCT_IMAGE_MAX_WIDTH = 1000;
+const PRODUCT_IMAGE_MAX_CHARS = 200_000;
+
+export function compressProductImage(file) {
+  return compressCover(file, { maxWidth: PRODUCT_IMAGE_MAX_WIDTH, maxChars: PRODUCT_IMAGE_MAX_CHARS });
+}
+
 // Shrinks an uploaded image to a compressed JPEG data URL small enough to store inside the post.
-export async function compressCover(file) {
+export async function compressCover(file, { maxWidth = COVER_MAX_WIDTH, maxChars = COVER_MAX_CHARS } = {}) {
   const url = URL.createObjectURL(file);
   try {
     const image = await new Promise((resolve, reject) => {
@@ -347,14 +420,18 @@ export async function compressCover(file) {
       element.src = url;
     });
 
-    let width = Math.min(COVER_MAX_WIDTH, image.naturalWidth);
+    let width = Math.min(maxWidth, image.naturalWidth);
     for (let attempt = 0; attempt < 6; attempt += 1) {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = Math.round((image.naturalHeight / image.naturalWidth) * width);
-      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-      if (dataUrl.length <= COVER_MAX_CHARS) return dataUrl;
+      const context = canvas.getContext('2d');
+      // JPEG has no transparency: paint white first so transparent PNGs don't turn black.
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+      if (dataUrl.length <= maxChars) return dataUrl;
       width = Math.round(width * 0.75);
     }
     throw new Error('That image is too large even after compressing. Try a smaller one.');

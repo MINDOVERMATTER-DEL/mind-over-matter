@@ -75,14 +75,12 @@ export const problems = [
 ];
 
 export const approach = [
-  { title: 'Training peer counselors', icon: 'graduation', text: 'Equipping students with the skills to guide and support their peers.' },
   { title: 'Advocacy for mental health', icon: 'megaphone', text: 'Pushing for university policies and practices that promote student mental well-being.' },
   { title: 'Creation of support groups', icon: 'users', text: 'Close-knit groups and regular meet-ups where students connect with peers facing similar challenges.' },
   { title: 'Capacity building', icon: 'sprout', text: 'Workshops that build the skills, knowledge, and resources to manage stress, emotions, and mental health challenges constructively.' },
 ];
 
 export const objectives = [
-  'Empower medical students by training peer counselors among them.',
   'Provide a safe and supportive space for students to discuss mental health concerns.',
   'Raise awareness about mental health issues among students.',
   'Connect students with trained mental health personnel on and off campus.',
@@ -91,11 +89,6 @@ export const objectives = [
 ];
 
 export const programs = [
-  {
-    title: 'One-on-one peer counselling',
-    icon: 'message',
-    text: 'Organized, confidential sessions with trained and qualified peer counselors, on and off campus.',
-  },
   {
     title: 'Access to mental health professionals',
     icon: 'stethoscope',
@@ -119,7 +112,10 @@ export const impact = [
   { title: 'Empowered individuals', text: 'Participants gaining tools and resources to manage their mental health, build resilience, and thrive.' },
 ];
 
-export const founders = [
+// The team on the About page. A member with `name: null` shows as "To be announced" with a placeholder
+// portrait; fill in their name, photo key, and bio once the role is filled. Photo keys map to images in
+// pages/main.jsx (teamPhotos).
+export const team = [
   {
     name: 'Faith Waigi',
     role: 'Founder',
@@ -127,16 +123,28 @@ export const founders = [
     bio: "Faith guides the club's mission, vision, and objectives, keeping our work aligned with its founding framework. She facilitates communication with key stakeholders, including the Kenyatta University Medical School fraternity and mental health organizations. Faith is a mental health enthusiast and a 5th-year medical student at Kenyatta University.",
   },
   {
-    name: 'Reagan Kirwa',
-    role: 'Director of Development',
-    photo: 'reagan',
-    bio: 'Reagan drives the growth of the club, identifying partnership and funding opportunities, providing strategic input on major decisions, and bringing new ideas that keep the club innovative and relevant. He is the National Officer for the Standing Committee on Mental Health (SCOMH) in Kenya.',
+    name: 'Rogers Kuria',
+    role: 'Head of Administration & Finance',
+    photo: 'rogers',
+    bio: 'Rogers keeps the club running smoothly behind the scenes, looking after member records and internal organisation, and overseeing budgeting, bookkeeping, and financial reporting.',
   },
   {
-    name: 'Cliff Sabaniah',
-    role: 'Events Coordinator & Public Relations',
-    photo: 'cliff',
-    bio: 'Cliff leads event coordination and public relations, from venue booking and materials to logistics, and heads the social media team. He is the Local Officer for the Standing Committee on Mental Health (SCOMH) at Kenyatta University.',
+    name: 'Reagan Kirwa',
+    role: 'Head of Programs & Initiatives',
+    photo: 'reagan',
+    bio: 'Reagan leads the planning and delivery of our events, workshops, and awareness campaigns, coordinating the teams that bring each program to life. He is also the National Officer for the Standing Committee on Mental Health (SCOMH) in Kenya.',
+  },
+  {
+    name: 'Krystal Karan',
+    role: 'Public Relations & Initiatives',
+    photo: 'krystal',
+    bio: 'Krystal is the voice of the club online. She manages our social media and communications, making sure everything we share is empathetic, inclusive, and true to our values.',
+  },
+  {
+    name: null,
+    role: 'Head of Strategic Development & Partnerships',
+    photo: null,
+    bio: 'Leads long-term planning and builds partnerships with NGOs and mental health organisations to grow what the club can offer. Announcement coming soon.',
   },
 ];
 

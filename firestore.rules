@@ -46,7 +46,7 @@ service cloud.firestore {
       return message.keys().hasOnly(['name', 'email', 'topic', 'message', 'read', 'createdAt'])
         && message.name is string && message.name.size() > 0 && message.name.size() <= 100
         && message.email is string && message.email.size() <= 200 && message.email.matches('[^@ ]+@[^@ ]+[.][^@ ]+')
-        && message.topic in ['General question', 'Peer counselling', 'Membership', 'Partnership', 'Events', 'Other']
+        && message.topic in ['General question', 'Membership', 'Events', 'Merch', 'Partnership', 'Other']
         && message.message is string && message.message.size() > 0 && message.message.size() <= 5000
         && message.read == false
         && message.createdAt == request.time;
@@ -59,6 +59,27 @@ service cloud.firestore {
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
         && request.resource.data.read is bool;
+    }
+
+    // Merch products, managed in the dashboard. Photos are stored inside the product (up to 4).
+    function isValidProduct(product) {
+      return product.keys().hasOnly(['name', 'category', 'price', 'sizes', 'description', 'details', 'images', 'available', 'sortOrder', 'createdAt', 'updatedAt'])
+        && product.name is string && product.name.size() > 0 && product.name.size() <= 80
+        && product.category in ['Hoodies', 'T-shirts', 'Caps', 'Bucket hats', 'Other']
+        && product.price is number && product.price >= 0
+        && product.sizes is list && product.sizes.size() > 0 && product.sizes.size() <= 6
+        && product.description is string && product.description.size() <= 1000
+        && product.details is list && product.details.size() <= 12
+        && product.images is list && product.images.size() > 0 && product.images.size() <= 4
+        && product.available is bool
+        && product.sortOrder is number;
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidProduct(request.resource.data) && isNewItem(request.resource.data);
+      allow update: if isAdmin() && isValidProduct(request.resource.data) && isEditedItem(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // Merch orders from the shop. Buyers aren't signed in, so creation is open but validated. Prices sent with an

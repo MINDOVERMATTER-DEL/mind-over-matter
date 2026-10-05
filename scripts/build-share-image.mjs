@@ -32,7 +32,7 @@ const background = Buffer.from(`
   <circle cx="${120 + BADGE / 2}" cy="${HEIGHT / 2}" r="${BADGE / 2 + 14}" fill="#ffffff" opacity="0.18"/>
   <text x="505" y="285" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#ffffff">Mind Over Matter</text>
   <text x="512" y="350" font-family="'Segoe UI', Arial, sans-serif" font-size="32" fill="#d9fff0">Kenyatta University mental health club</text>
-  <text x="512" y="420" font-family="'Segoe UI', Arial, sans-serif" font-size="26" fill="#b6f2cf">Peer support · Workshops · Community</text>
+  <text x="512" y="420" font-family="'Segoe UI', Arial, sans-serif" font-size="26" fill="#b6f2cf">Support groups · Workshops · Community</text>
 </svg>`);
 
 const circle = Buffer.from(`<svg width="${BADGE}" height="${BADGE}"><circle cx="${BADGE / 2}" cy="${BADGE / 2}" r="${BADGE / 2}" fill="#fff"/></svg>`);
