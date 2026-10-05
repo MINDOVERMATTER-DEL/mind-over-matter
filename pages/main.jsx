@@ -1066,14 +1066,6 @@ function EventsPage() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <div className="section-heading"><p className="eyebrow">How we work</p><h2>The pillars behind every program.</h2></div>
-          <div className="feature-grid">
-            {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
-          </div>
-        </div>
-      </section>
 
       <section className="section alt-section">
         <div className="container">
