@@ -1654,16 +1654,17 @@ input {
   color: var(--nav-green);
 }
 
-/* Home hero with the club group photo behind it. The wash is darkest behind the text on the left and lets
-   the faces show through on the right. */
+/* Home hero with the club group photo behind it, filling the whole screen until you scroll. The wash is
+   darkest behind the text on the left and lets the faces show through on the right. */
 .hero-photo {
   position: relative;
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: min(82vh, 760px);
+  min-height: 100svh;
   margin-top: -76px;
   padding-top: calc(76px + 4rem);
+  padding-bottom: 6.5rem;
   overflow: hidden;
   background: #06231b;
   color: #fff;
@@ -1701,6 +1702,84 @@ input {
 .hero-photo .hero-grid {
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
+}
+
+/* "Scroll" hint at the bottom of the hero: a mouse outline whose wheel keeps rolling down. */
+.scroll-cue {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(255 255 255 / 88%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  translate: -50% 0;
+  transition: color 0.3s var(--ease-out);
+}
+
+.scroll-cue:hover,
+.scroll-cue:focus-visible {
+  color: #8ee6c4;
+}
+
+.scroll-cue-mouse {
+  display: flex;
+  justify-content: center;
+  width: 26px;
+  height: 40px;
+  padding-top: 7px;
+  border: 2px solid currentcolor;
+  border-radius: 14px;
+}
+
+.scroll-cue-wheel {
+  width: 4px;
+  height: 8px;
+  border-radius: 2px;
+  background: currentcolor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-cue {
+    animation: scroll-cue-bob 2.4s ease-in-out infinite;
+  }
+
+  .scroll-cue-wheel {
+    animation: scroll-cue-wheel 1.6s var(--ease-out) infinite;
+  }
+}
+
+@keyframes scroll-cue-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes scroll-cue-wheel {
+  0% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 
@@ -3904,8 +3983,8 @@ input {
   }
 
   .hero-photo {
-    min-height: 0;
-    padding-top: calc(76px + 2.5rem);
+    padding-top: calc(76px + 2rem);
+    padding-bottom: 6rem;
   }
 
   .hero-photo::before {

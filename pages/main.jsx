@@ -719,9 +719,13 @@ function HomePage() {
             </motion.ul>
           </motion.div>
         </div>
+        <a className="scroll-cue" href="#home-start" aria-label="Scroll down to see more">
+          <span className="scroll-cue-mouse" aria-hidden="true"><span className="scroll-cue-wheel" /></span>
+          <span aria-hidden="true">Scroll</span>
+        </a>
       </section>
 
-      <section className="section section-compact">
+      <section id="home-start" className="section section-compact">
         <div className="container">
           <blockquote className="quote-band">
             <Quotes className="quote-icon" size={30} aria-hidden="true" />
