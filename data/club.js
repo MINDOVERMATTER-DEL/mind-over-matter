@@ -138,7 +138,7 @@ export const team = [
   },
   {
     name: 'Krystal Karan',
-    role: 'Public Relations & Initiatives',
+    role: 'Public Relations & Communications',
     photo: 'krystal',
   },
 ];
