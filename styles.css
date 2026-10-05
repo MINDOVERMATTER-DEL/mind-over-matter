@@ -1712,9 +1712,9 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   color: rgb(255 255 255 / 88%);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1731,17 +1731,17 @@ input {
 .scroll-cue-mouse {
   display: flex;
   justify-content: center;
-  width: 26px;
-  height: 40px;
-  padding-top: 7px;
-  border: 2px solid currentcolor;
-  border-radius: 14px;
+  width: 19px;
+  height: 29px;
+  padding-top: 5px;
+  border: 1.5px solid currentcolor;
+  border-radius: 10px;
 }
 
 .scroll-cue-wheel {
-  width: 4px;
-  height: 8px;
-  border-radius: 2px;
+  width: 3px;
+  height: 6px;
+  border-radius: 1.5px;
   background: currentcolor;
 }
 
@@ -1762,7 +1762,7 @@ input {
   }
 
   50% {
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
 }
 
@@ -1778,7 +1778,7 @@ input {
 
   100% {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
 }
 
