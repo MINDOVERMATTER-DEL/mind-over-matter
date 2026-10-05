@@ -707,7 +707,7 @@ function HomePage() {
           <motion.div className="hero-copy" initial="hidden" animate="shown" variants={introVariants}>
             <motion.p className="eyebrow" variants={introItemVariants}>Kenyatta University · Student mental health</motion.p>
             <motion.h1 variants={introItemVariants}>A community where mental health matters.</motion.h1>
-            <motion.p className="lede" variants={introItemVariants}>Mind Over Matter is a student-led club building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
+            <motion.p className="lede hero-lede" variants={introItemVariants}>Mind Over Matter is a student-led club building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
             <motion.div className="hero-actions" variants={introItemVariants}>
               <a href="/about-us#get-involved" className="button button-primary">Join the club <ArrowRight size={17} aria-hidden="true" /></a>
               <a href="/event#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
