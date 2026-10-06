@@ -417,7 +417,7 @@ function Footer() {
             <span className="brand-mark"><img src={logoEmblem} alt="" width="40" height="40" loading="lazy" /></span>
             <span>Mind Over Matter</span>
           </a>
-          <p>A student-led mental health club at Kenyatta University, building a community where mental health is openly discussed, actively nurtured, and never faced alone.</p>
+          <p>A student-led mental health club for students across Kenya, building a community where mental health is openly discussed, actively nurtured, and never faced alone.</p>
           {socials.length > 0 && (
             <ul className="footer-social" aria-label="Mind Over Matter on social media">
               {socials.map((social) => (
@@ -481,7 +481,7 @@ function Footer() {
       </div>
 
       <div className="container footer-bottom">
-        <p>© {new Date().getFullYear()} Mind Over Matter, Kenyatta University. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Mind Over Matter, Kenya. All rights reserved.</p>
         <p className="footer-credit">
           Designed by {siteCredit.name}
           {siteCredit.linkedin ? (
@@ -705,7 +705,7 @@ function HomePage() {
         />
         <div className="container hero-grid">
           <motion.div className="hero-copy" initial="hidden" animate="shown" variants={introVariants}>
-            <motion.p className="eyebrow" variants={introItemVariants}>Kenyatta University · Student mental health</motion.p>
+            <motion.p className="eyebrow" variants={introItemVariants}>Students across Kenya · Mental health</motion.p>
             <motion.h1 variants={introItemVariants}>A community where mental health matters.</motion.h1>
             <motion.p className="lede hero-lede" variants={introItemVariants}>Mind Over Matter is a student-led club building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
             <motion.div className="hero-actions" variants={introItemVariants}>
@@ -886,7 +886,7 @@ function ArchivePage() {
 
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Blog" title="Stories, skills, and support for student life." lede="Articles from the Mind Over Matter community on coping, wellbeing, and life at Kenyatta University." />
+      <PageHero eyebrow="Blog" title="Stories, skills, and support for student life." lede="Articles from the Mind Over Matter community on coping, wellbeing, and student life in Kenya." />
       <section className="section"><div className="container">
         <div className="archive-toolbar">
           <label className="sr-only" htmlFor="archive-search">Search articles</label>
@@ -1267,7 +1267,7 @@ function ContactPage() {
         <article className="contact-card"><span className="journal-tag">Get in touch</span><h3>Talk to us.</h3><p>Students can reach out about support groups, events, or membership. Partners, NGOs, and mental health professionals: we would love to work with you.</p><ul className="contact-list">
           <li><EnvelopeSimple className="contact-list-icon" size={17} aria-hidden="true" /><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
           {contact.phone && <li><Phone className="contact-list-icon" size={17} aria-hidden="true" /><a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`}>{contact.phone}</a></li>}
-          <li><MapPin className="contact-list-icon" size={17} aria-hidden="true" /><span>{contact.location.name}, {contact.location.detail}, {contact.location.city}</span></li>
+          <li><MapPin className="contact-list-icon" size={17} aria-hidden="true" /><span>Based in {contact.location.city}, open to students across the country</span></li>
         </ul></article>
         <div className="contact-form-card"><h3>Send a message</h3><form className="contact-form" onSubmit={handleSubmit}>
           <label>Name<input name="name" type="text" placeholder="Your name" maxLength={100} autoComplete="name" required /></label>
@@ -3153,7 +3153,7 @@ function PrivacyPage() {
       <section className="section">
         <div className="container narrow-container privacy-content">
           <h2>Who we are</h2>
-          <p>Mind Over Matter is a student-led mental health club at Kenyatta University, Nairobi, Kenya. In this policy, “we” means the club and its Executive Committee.</p>
+          <p>Mind Over Matter is a student-led mental health club for students across Kenya, based in Nairobi. In this policy, “we” means the club and its Executive Committee.</p>
 
           <h2>What we collect</h2>
           <p>We only collect information you choose to give us:</p>
@@ -3197,7 +3197,7 @@ function PrivacyPage() {
 }
 
 const pageTitles = {
-  'index': 'Mind Over Matter | Kenyatta University Mental Health Club',
+  'index': 'Mind Over Matter | Student Mental Health Club in Kenya',
   'event': 'Events & Programs | Mind Over Matter',
   'blog': 'Blog | Mind Over Matter',
   'article': 'Mind Over Matter | Article',

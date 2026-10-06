@@ -4,11 +4,10 @@
 export const contact = {
   email: 'mentalwellnessclubmom@gmail.com',
   phone: '+254 704 580 422', // Optional. Hidden while empty.
+  // Where the club is based. Members can be students anywhere in Kenya.
   location: {
-    name: 'Kenyatta University',
-    detail: 'Main Campus, Thika Road',
     city: 'Nairobi, Kenya',
-    mapUrl: 'https://www.google.com/maps/search/?api=1&query=Kenyatta+University+Main+Campus+Nairobi',
+    mapUrl: 'https://www.google.com/maps/search/?api=1&query=Nairobi+Kenya',
   },
 };
 
@@ -30,7 +29,7 @@ export const siteCredit = {
 };
 
 export const preamble =
-  'We, the students of Kenyatta University, recognizing the unique pressures and challenges of our academic and personal lives, and believing in the fundamental importance of mental well-being, do hereby establish "Mind Over Matter." Our purpose is to build a compassionate and supportive community where mental health matters, is openly discussed, and actively nurtured.';
+  'We, students across Kenya, recognizing the unique pressures and challenges of our academic and personal lives, and believing in the fundamental importance of mental well-being, do hereby establish "Mind Over Matter." Our purpose is to build a compassionate and supportive community where mental health matters, is openly discussed, and actively nurtured.';
 
 export const purpose =
   'To build a sustainable community where the mental health of all members is valued, protected, and prioritized.';
@@ -77,14 +76,14 @@ export const problems = [
 export const approach = [
   { title: 'Advocacy for mental health', icon: 'megaphone', text: 'Pushing for university policies and practices that promote student mental well-being.' },
   { title: 'Creation of support groups', icon: 'users', text: 'Close-knit groups and regular meet-ups where students connect with peers facing similar challenges.' },
-  { title: 'Community approach', icon: 'handshake', text: 'Social events, awareness campaigns, and open conversations that build a caring campus community, so no student faces mental health challenges alone.' },
+  { title: 'Community approach', icon: 'handshake', text: 'Social events, awareness campaigns, and open conversations that build a caring community, so no student faces mental health challenges alone.' },
   { title: 'Capacity building', icon: 'sprout', text: 'Workshops that build the skills, knowledge, and resources to manage stress, emotions, and mental health challenges constructively.' },
 ];
 
 export const objectives = [
   'Provide a safe and supportive space for students to discuss mental health concerns.',
   'Raise awareness about mental health issues among students.',
-  'Connect students with trained mental health personnel on and off campus.',
+  'Connect students with trained mental health personnel, wherever they study.',
   'Promote healthy coping mechanisms and self-care strategies.',
   'Advocate for policies and practices that support student mental health.',
 ];

@@ -1,7 +1,7 @@
 {
   "name": "mind-over-matter",
   "version": "1.0.0",
-  "description": "Website for Mind Over Matter, the student-led mental health club at Kenyatta University.",
+  "description": "Website for Mind Over Matter, the student-led mental health club for students across Kenya.",
   "private": true,
   "type": "module",
   "scripts": {

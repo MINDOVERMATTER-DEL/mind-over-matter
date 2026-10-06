@@ -1,6 +1,6 @@
 # Mind Over Matter website
 
-The website for **Mind Over Matter**, the student-led mental health club at Kenyatta University: club information, events and programs, a blog, a contact form, and a private admin dashboard for publishing posts and events and reading messages.
+The website for **Mind Over Matter**, the student-led mental health club for students across Kenya: club information, events and programs, a blog, a contact form, and a private admin dashboard for publishing posts and events and reading messages.
 
 Built with React and Vite. Content (blog posts, events, contact messages) and admin sign-in use Firebase.
 
