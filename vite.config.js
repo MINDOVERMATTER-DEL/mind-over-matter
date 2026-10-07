@@ -35,10 +35,10 @@ const fileTypes = {
 };
 const fsPrefix = `/@fs/${siteRoot}/`;
 
-// The site's public web address, e.g. https://mindovermatterku.org (no trailing slash). Set it when building for
-// the live site:  set SITE_URL=https://example.org && npm run build
-// With it, share previews use full image links (required by WhatsApp/Facebook) and a sitemap is generated.
-const SITE_URL = (process.env.SITE_URL || '').trim().replace(/\/+$/, '');
+// The site's public web address (no trailing slash), used for share previews (WhatsApp/Facebook need full image
+// links), the sitemap, and the address search engines are told to list. A SITE_URL environment variable
+// overrides it, e.g. for a test copy of the site:  set SITE_URL=https://example.org && npm run build
+const SITE_URL = (process.env.SITE_URL || 'https://www.mindovermatterke.org').trim().replace(/\/+$/, '');
 const SITE_NAME = 'Mind Over Matter';
 const SHARE_IMAGE = '/og-image.png';
 // Pages search engines should not list.

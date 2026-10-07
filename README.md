@@ -24,7 +24,8 @@ npm run dev      # starts the site at http://localhost:5173
 | `npm run icons` | Regenerate `pages/icons.jsx` after adding an icon |
 | `npm run share-image` | Regenerate the social share image |
 
-When building for the live site, set its address so share previews and the sitemap use full links:
+The live address, `https://www.mindovermatterke.org`, is set in `vite.config.js` and used for share previews and the
+sitemap. To build a copy for a different address, set `SITE_URL`:
 
 ```bash
 # Windows (Command Prompt)
