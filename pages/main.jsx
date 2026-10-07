@@ -13,13 +13,13 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { posts as samplePosts } from '../data/posts.js';
 import {
-  blogCategories, categories, categoryLabel, compressCover, compressProductImage, createEvent, createPost, createProduct, describeError, eventTypes, fetchEvents, fetchPosts,
+  blogCategories, categories, categoryLabel, combineProducts, compressCover, compressProductImage, createEvent, createPost, createProduct, describeError, eventTypes, fetchEvents, fetchPosts,
   deliveryOptions, fetchMessages, fetchOrders, fetchProducts, importProducts, isFirebaseConfigured, messageTopics, orderStatuses, placeOrder,
   removeEvent, removeMessage, removeOrder, removePost, removeProduct, resetPassword, sendMessage, setMessageRead, setOrderStatus, signIn,
-  signOut, updateEvent, updatePost, updateProduct, watchAdmin,
+  productStorageSize, signOut, updateEvent, updatePost, updateProduct, watchAdmin,
 } from '../data/blog.js';
 import {
-  formatPrice, imageLabels, MAX_PRODUCT_IMAGES, merchTagline, orderTotal, productCategories, resolveImage, sizeOptions,
+  formatPrice, imageLabels, MAX_PRODUCT_COLORS, MAX_PRODUCT_IMAGES, merchTagline, orderTotal, productCategories, resolveImage, sizeOptions,
   starterProducts,
 } from '../data/merch.js';
 import {
@@ -2163,11 +2163,37 @@ function ProductsManager({ editing, onEdit }) {
     );
   }
 
+  const inShop = (id) => products.some((product) => product.id === id);
+
+  // Hoodies and T-shirts used to be one product per colour. Each built-in product with colours names the
+  // products it replaces (legacyId); while those are still in the shop, offer to combine them into one product,
+  // keeping their price and photos. Hidden products are left alone.
+  const pendingCombines = starterProducts.flatMap((starter) => {
+    if (!starter.colors.length || inShop(starter.id)) return [];
+    const parts = starter.colors.flatMap((entry) => {
+      const old = products.find((product) => product.id === entry.legacyId && product.available);
+      return old ? [{ name: entry.name, old }] : [];
+    });
+    if (!parts.length) return [];
+    const colors = parts.map(({ name, old }) => ({ name, images: old.images }));
+    return [{
+      product: {
+        ...starter,
+        price: parts[0].old.price,
+        images: colors[0].images,
+        colors,
+        sortOrder: Math.min(...parts.map(({ old }) => old.sortOrder)),
+      },
+      removeIds: parts.map(({ old }) => old.id),
+      oldNames: parts.map(({ old }) => old.name),
+    }];
+  });
+
   // Products added to the website's built-in catalogue after the first import, placed after the existing ones.
   // A built-in product that was deleted in the dashboard shows up here again, so it can be restored.
   const lastSortOrder = products.reduce((max, product) => Math.max(max, product.sortOrder), -1);
   const newStarterProducts = starterProducts
-    .filter((starter) => !products.some((product) => product.id === starter.id))
+    .filter((starter) => !inShop(starter.id) && !starter.colors.some((entry) => inShop(entry.legacyId)))
     .map((starter, index) => ({ ...starter, sortOrder: lastSortOrder + 1 + index }));
 
   async function run(task, successText) {
@@ -2219,6 +2245,26 @@ function ProductsManager({ editing, onEdit }) {
         </div>
       )}
 
+      {status === 'ready' && !usingStarter && pendingCombines.length > 0 && (
+        <div className="dashboard-notice is-info starter-notice">
+          <p>
+            <strong>Combine colours:</strong> show each item once in the shop, with a choice of colours.{' '}
+            {pendingCombines.map(({ product, oldNames }) => `${oldNames.join(', ')} → one “${product.name}”`).join('; ')}.
+            Prices and photos are kept.
+          </p>
+          <button
+            type="button"
+            className="button button-primary button-small"
+            disabled={busy}
+            onClick={() => run(async () => {
+              for (const { product, removeIds } of pendingCombines) await combineProducts(product, removeIds);
+            }, `Combined into ${pendingCombines.map(({ product }) => `“${product.name}”`).join(' and ')}, each with a choice of colours.`)}
+          >
+            {busy ? 'Combining…' : 'Combine colours'}
+          </button>
+        </div>
+      )}
+
       {status === 'ready' && !usingStarter && newStarterProducts.length > 0 && (
         <div className="dashboard-notice is-info starter-notice">
           <p><strong>{newStarterProducts.length} new {newStarterProducts.length === 1 ? 'design is' : 'designs are'} ready to add:</strong> {newStarterProducts.map((product) => product.name).join(', ')}. They’ll go to the end of the shop, and you can edit or hide them afterwards.</p>
@@ -2236,7 +2282,11 @@ function ProductsManager({ editing, onEdit }) {
             </span>
             <div className="dashboard-row-info">
               <strong>{product.name}</strong>
-              <span>{product.category} · {formatPrice(product.price)}{product.available ? '' : ' · Hidden from shop'}</span>
+              <span>
+                {product.category} · {formatPrice(product.price)}
+                {product.colors.length > 1 ? ` · ${product.colors.length} colours` : ''}
+                {product.available ? '' : ' · Hidden from shop'}
+              </span>
             </div>
             {!usingStarter && (
               <div className="dashboard-row-actions">
@@ -2256,13 +2306,12 @@ function ProductsManager({ editing, onEdit }) {
   );
 }
 
-function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
-  const isEditing = Boolean(product);
-  const [images, setImages] = useState(() => product?.images ?? []);
-  const [sizes, setSizes] = useState(() => product?.sizes ?? ['S', 'M', 'L', 'XL', 'XXL']);
+// Largest a product may be when saved: the database allows 1 MB per product, and uploaded photos are big.
+const MAX_PRODUCT_SIZE = 950_000;
+
+// The photos of a product, or of one of its colours: upload, label, reorder, and remove.
+function ProductPhotosField({ images, onChange }) {
   const [imageError, setImageError] = useState('');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
   const imageInputRef = useRef(null);
 
   async function handleImageChange(event) {
@@ -2273,7 +2322,7 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
       for (const file of files) {
         added.push({ src: await compressProductImage(file), label: imageLabels[Math.min(images.length + added.length, imageLabels.length - 1)] });
       }
-      setImages((current) => [...current, ...added]);
+      onChange([...images, ...added]);
     } catch (imageProblem) {
       setImageError(imageProblem.message);
     } finally {
@@ -2282,15 +2331,71 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
   }
 
   function updateImage(index, changes) {
-    setImages((current) => current.map((image, i) => (i === index ? { ...image, ...changes } : image)));
+    onChange(images.map((image, i) => (i === index ? { ...image, ...changes } : image)));
   }
 
   function moveImage(index, direction) {
-    setImages((current) => {
+    const next = [...images];
+    [next[index], next[index + direction]] = [next[index + direction], next[index]];
+    onChange(next);
+  }
+
+  return (
+    <>
+      {images.length > 0 && (
+        <ul className="product-image-list">
+          {images.map((image, index) => (
+            <li key={`${index}-${image.src.slice(-24)}`} className="product-image-item">
+              <img src={resolveImage(image.src)} alt="" width="1000" height="1250" />
+              <select aria-label="Photo label" value={image.label} onChange={(event) => updateImage(index, { label: event.target.value })}>
+                {imageLabels.map((label) => <option key={label} value={label}>{label}</option>)}
+              </select>
+              <div className="product-image-actions">
+                <button type="button" className="button button-ghost button-small" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label="Move photo earlier">←</button>
+                <button type="button" className="button button-ghost button-small" disabled={index === images.length - 1} onClick={() => moveImage(index, 1)} aria-label="Move photo later">→</button>
+                <button type="button" className="button button-ghost button-small" onClick={() => onChange(images.filter((_, i) => i !== index))} aria-label="Remove photo"><Trash size={15} aria-hidden="true" /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {images.length < MAX_PRODUCT_IMAGES && (
+        <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={handleImageChange} aria-label="Add photos" />
+      )}
+      {imageError && <p className="form-status error" role="alert">{imageError}</p>}
+    </>
+  );
+}
+
+function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
+  const isEditing = Boolean(product);
+  // Without colour options a product has one set of photos; with them, each colour has its own.
+  const [images, setImages] = useState(() => product?.images ?? []);
+  const [colors, setColors] = useState(() => product?.colors ?? []);
+  const [sizes, setSizes] = useState(() => product?.sizes ?? ['S', 'M', 'L', 'XL', 'XXL']);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  function updateColor(index, changes) {
+    setColors((current) => current.map((entry, i) => (i === index ? { ...entry, ...changes } : entry)));
+  }
+
+  function moveColor(index, direction) {
+    setColors((current) => {
       const next = [...current];
       [next[index], next[index + direction]] = [next[index + direction], next[index]];
       return next;
     });
+  }
+
+  // Removing the only colour turns colour options off again, keeping its photos as the product's photos.
+  function removeColor(index) {
+    if (colors.length === 1) {
+      setImages(colors[0].images);
+      setColors([]);
+      return;
+    }
+    setColors((current) => current.filter((_, i) => i !== index));
   }
 
   function toggleSize(size) {
@@ -2299,15 +2404,21 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
       : sizeOptions.filter((option) => option === size || current.includes(option))));
   }
 
+  // What's wrong with the photos and colours, or '' when they're fine.
+  function photosProblem() {
+    if (!colors.length) return images.length ? '' : 'Add at least one photo.';
+    const names = colors.map((entry) => entry.name.trim().toLowerCase());
+    if (names.some((name, index) => names.indexOf(name) !== index)) return 'Each colour needs a different name.';
+    const withoutPhotos = colors.find((entry) => !entry.images.length);
+    return withoutPhotos ? `Add at least one photo for “${withoutPhotos.name.trim()}”.` : '';
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.currentTarget));
-    if (!images.length) {
-      setError('Add at least one photo.');
-      return;
-    }
-    if (!sizes.length) {
-      setError('Choose at least one size.');
+    const problem = photosProblem() || (sizes.length ? '' : 'Choose at least one size.');
+    if (problem) {
+      setError(problem);
       return;
     }
     const fields = {
@@ -2317,10 +2428,15 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
       sizes,
       description: values.description,
       details: values.details.split('\n'),
-      images,
+      images: colors.length ? colors[0].images : images,
+      colors,
       available: values.available === 'on',
       sortOrder: product?.sortOrder ?? nextSortOrder,
     };
+    if (productStorageSize(fields) > MAX_PRODUCT_SIZE) {
+      setError('The photos are too large to save together. Remove a photo or two, or split some colours into a separate product.');
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -2340,7 +2456,7 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
         <button type="button" className="button button-ghost button-small" onClick={onCancel}>Back to merch</button>
       </div>
       <form className="admin-form" onSubmit={handleSubmit}>
-        <label>Product name<input name="name" type="text" maxLength={80} required defaultValue={product?.name ?? ''} placeholder="e.g. Green bucket hat" /></label>
+        <label>Product name<input name="name" type="text" maxLength={80} required defaultValue={product?.name ?? ''} placeholder="e.g. Bucket hat" /></label>
         <div className="admin-form-row">
           <label>Category
             <select name="category" required defaultValue={product?.category ?? ''}>
@@ -2368,30 +2484,47 @@ function ProductEditor({ product, nextSortOrder, onCancel, onSaved }) {
           <textarea name="details" rows={4} defaultValue={(product?.details ?? []).join('\n')} />
         </label>
 
-        <div className="admin-field">
-          <span className="admin-field-label">Photos <span className="admin-hint">Up to {MAX_PRODUCT_IMAGES}. The first photo is the main one. Photos on a plain white background look best.</span></span>
-          {images.length > 0 && (
-            <ul className="product-image-list">
-              {images.map((image, index) => (
-                <li key={`${index}-${image.src.slice(-24)}`} className="product-image-item">
-                  <img src={resolveImage(image.src)} alt="" width="1000" height="1250" />
-                  <select aria-label="Photo label" value={image.label} onChange={(event) => updateImage(index, { label: event.target.value })}>
-                    {imageLabels.map((label) => <option key={label} value={label}>{label}</option>)}
-                  </select>
-                  <div className="product-image-actions">
-                    <button type="button" className="button button-ghost button-small" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label="Move photo earlier">←</button>
-                    <button type="button" className="button button-ghost button-small" disabled={index === images.length - 1} onClick={() => moveImage(index, 1)} aria-label="Move photo later">→</button>
-                    <button type="button" className="button button-ghost button-small" onClick={() => setImages((current) => current.filter((_, i) => i !== index))} aria-label="Remove photo"><Trash size={15} aria-hidden="true" /></button>
+        {colors.length === 0 ? (
+          <div className="admin-field">
+            <span className="admin-field-label">Photos <span className="admin-hint">Up to {MAX_PRODUCT_IMAGES}. The first photo is the main one. Photos on a plain white background look best.</span></span>
+            <ProductPhotosField images={images} onChange={setImages} />
+            <div className="color-editor-add">
+              <button type="button" className="button button-ghost button-small" onClick={() => setColors([{ name: '', images }])}>
+                <Plus size={15} aria-hidden="true" /> Add colour options
+              </button>
+              <span className="admin-hint">For an item that comes in several colours. Each colour gets its own photos.</span>
+            </div>
+          </div>
+        ) : (
+          <div className="admin-field">
+            <span className="admin-field-label">Colours <span className="admin-hint">The first colour is shown first in the shop. Up to {MAX_PRODUCT_IMAGES} photos per colour.</span></span>
+            <ol className="color-editor-list">
+              {colors.map((entry, index) => (
+                // Colours have no id of their own; the list is short and every field is controlled.
+                <li key={index} className="color-editor">
+                  <div className="color-editor-head">
+                    <label className="color-editor-name">Colour name
+                      <input type="text" maxLength={40} required value={entry.name} onChange={(event) => updateColor(index, { name: event.target.value })} placeholder="e.g. Black, or Green with white print" />
+                    </label>
+                    <div className="product-image-actions">
+                      <button type="button" className="button button-ghost button-small" disabled={index === 0} onClick={() => moveColor(index, -1)} aria-label={`Move ${entry.name || 'colour'} up`}>↑</button>
+                      <button type="button" className="button button-ghost button-small" disabled={index === colors.length - 1} onClick={() => moveColor(index, 1)} aria-label={`Move ${entry.name || 'colour'} down`}>↓</button>
+                      <button type="button" className="button button-ghost button-small" onClick={() => removeColor(index)} aria-label={`Remove ${entry.name || 'colour'}`}><Trash size={15} aria-hidden="true" /></button>
+                    </div>
                   </div>
+                  <ProductPhotosField images={entry.images} onChange={(next) => updateColor(index, { images: next })} />
                 </li>
               ))}
-            </ul>
-          )}
-          {images.length < MAX_PRODUCT_IMAGES && (
-            <input ref={imageInputRef} type="file" accept="image/*" multiple onChange={handleImageChange} aria-label="Add photos" />
-          )}
-          {imageError && <p className="form-status error" role="alert">{imageError}</p>}
-        </div>
+            </ol>
+            {colors.length < MAX_PRODUCT_COLORS && (
+              <div className="color-editor-add">
+                <button type="button" className="button button-ghost button-small" onClick={() => setColors((current) => [...current, { name: '', images: [] }])}>
+                  <Plus size={15} aria-hidden="true" /> Add another colour
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <label className="admin-checkbox"><input className="admin-checkbox-input" name="available" type="checkbox" defaultChecked={product?.available ?? true} /> Show in the shop</label>
 
@@ -2494,7 +2627,7 @@ function OrdersManager({ orders, status, refresh }) {
                     {order.reference} · <span className={`order-status is-${statusOf(order)}`}>{orderStatusLabel(statusOf(order))}</span>
                   </span>
                   <span className="inbox-item-preview">
-                    {itemCount(order)} item{itemCount(order) === 1 ? '' : 's'}: {order.items.map((item) => item.name).join(', ')}
+                    {itemCount(order)} item{itemCount(order) === 1 ? '' : 's'}: {order.items.map(itemLabel).join(', ')}
                   </span>
                 </button>
               </li>
@@ -2523,8 +2656,8 @@ function OrdersManager({ orders, status, refresh }) {
                   <thead><tr><th scope="col">Item</th><th scope="col">Size</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>
                   <tbody>
                     {selected.items.map((item) => (
-                      <tr key={`${item.productId}-${item.size}`}>
-                        <td>{item.name}</td><td>{item.size}</td><td>{item.quantity}</td>
+                      <tr key={`${item.productId}-${item.color ?? ''}-${item.size}`}>
+                        <td>{itemLabel(item)}</td><td>{item.size}</td><td>{item.quantity}</td>
                         <td>{item.price === null ? '—' : formatPrice(item.price * item.quantity)}</td>
                       </tr>
                     ))}
@@ -2693,14 +2826,27 @@ function readStoredCart() {
   try {
     const stored = JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? '[]');
     return Array.isArray(stored)
-      ? stored.filter((item) => typeof item?.productId === 'string' && typeof item.size === 'string' && item.quantity > 0)
+      ? stored
+        .filter((item) => typeof item?.productId === 'string' && typeof item.size === 'string' && item.quantity > 0)
+        .map((item) => ({ ...item, color: typeof item.color === 'string' ? item.color : '' }))
       : [];
   } catch {
     return [];
   }
 }
 
-// Cart items are { productId, size, quantity }, remembered in the browser between visits.
+// The photos for one colour of a product, or the product's own photos when it has no colour options.
+function colorImages(product, colorName) {
+  return product.colors.find((entry) => entry.name === colorName)?.images ?? product.images;
+}
+
+// "T-shirt (Black)" for an order or cart item with a colour, otherwise just the product name.
+const itemLabel = (item) => (item.color ? `${item.name} (${item.color})` : item.name);
+
+const isSameLine = (item, productId, color, size) => item.productId === productId && item.color === color && item.size === size;
+
+// Cart items are { productId, color, size, quantity }, remembered in the browser between visits. `color` is ''
+// for products without colour options.
 function CartProvider({ children }) {
   const [items, setItems] = useState(readStoredCart);
 
@@ -2715,22 +2861,22 @@ function CartProvider({ children }) {
   const value = {
     items,
     count: items.reduce((sum, item) => sum + item.quantity, 0),
-    add(productId, size, quantity) {
+    add(productId, color, size, quantity) {
       setItems((current) => {
-        const existing = current.find((item) => item.productId === productId && item.size === size);
-        if (!existing) return [...current, { productId, size, quantity }];
+        const existing = current.find((item) => isSameLine(item, productId, color, size));
+        if (!existing) return [...current, { productId, color, size, quantity }];
         return current.map((item) => (item === existing
           ? { ...item, quantity: Math.min(MAX_QUANTITY, item.quantity + quantity) }
           : item));
       });
     },
-    setQuantity(productId, size, quantity) {
-      setItems((current) => current.map((item) => (item.productId === productId && item.size === size
+    setQuantity(productId, color, size, quantity) {
+      setItems((current) => current.map((item) => (isSameLine(item, productId, color, size)
         ? { ...item, quantity: Math.max(1, Math.min(MAX_QUANTITY, quantity)) }
         : item)));
     },
-    remove(productId, size) {
-      setItems((current) => current.filter((item) => !(item.productId === productId && item.size === size)));
+    remove(productId, color, size) {
+      setItems((current) => current.filter((item) => !isSameLine(item, productId, color, size)));
     },
     clear() {
       setItems([]);
@@ -2751,7 +2897,7 @@ function useCartLines() {
   const { shopProducts } = useProducts();
   return items.flatMap((item) => {
     const product = shopProducts.find((entry) => entry.id === item.productId);
-    return product ? [{ ...item, product, name: product.name, price: product.price }] : [];
+    return product ? [{ ...item, product, name: product.name, price: product.price, image: colorImages(product, item.color)[0] }] : [];
   });
 }
 
@@ -2766,7 +2912,7 @@ function QuantityStepper({ value, onChange, label }) {
 }
 
 const orderSteps = [
-  { icon: ShoppingBag, title: 'Choose your merch', text: 'Pick your items and sizes, then place your order with your phone number and email.' },
+  { icon: ShoppingBag, title: 'Choose your merch', text: 'Pick your items, colours, and sizes, then place your order with your phone number and email.' },
   { icon: HandCoins, title: 'We contact you', text: 'A committee member gets in touch to confirm the price, payment, and your order.' },
   { icon: Truck, title: 'Collect or receive it', text: 'Pick it up on campus or arrange delivery, whichever suits you.' },
 ];
@@ -2798,6 +2944,16 @@ function ProductCard({ product }) {
           <span className="post-tag">{product.category}</span>
           <h3 className="product-card-title">{product.name}</h3>
           <p className="product-price">{formatPrice(product.price)}</p>
+          {product.colors.length > 1 && (
+            <p className="product-card-colors">
+              <span className="product-card-swatches" aria-hidden="true">
+                {product.colors.slice(0, 5).map((entry) => (
+                  <img key={entry.name} className="product-card-swatch" src={resolveImage(entry.images[0].src)} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
+                ))}
+              </span>
+              {product.colors.length} colours
+            </p>
+          )}
         </div>
       </a>
     </article>
@@ -2868,6 +3024,11 @@ function CartSummaryLink() {
 
 function ProductPage({ product }) {
   const { add } = useCart();
+  // A link can choose the colour, e.g. /merch?product=hoodie&color=green.
+  const [colorIndex, setColorIndex] = useState(() => {
+    const requested = (new URLSearchParams(window.location.search).get('color') ?? '').toLowerCase();
+    return Math.max(product ? product.colors.findIndex((entry) => entry.name.toLowerCase() === requested) : -1, 0);
+  });
   const [imageIndex, setImageIndex] = useState(0);
   const [size, setSize] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -2892,11 +3053,14 @@ function ProductPage({ product }) {
       setSizeError(true);
       return;
     }
-    add(product.id, size, quantity);
+    add(product.id, selectedColor?.name ?? '', size, quantity);
     setAdded(true);
   }
 
-  const image = product.images[imageIndex];
+  const selectedColor = product.colors[colorIndex];
+  const images = selectedColor?.images ?? product.images;
+  const image = images[imageIndex] ?? images[0];
+  const imageName = selectedColor ? `${product.name}, ${selectedColor.name}` : product.name;
   return (
     <PageLayout pageClass="page-main">
       <section className="section product-section">
@@ -2905,11 +3069,11 @@ function ProductPage({ product }) {
           <div className="product-layout">
             <div className="product-gallery">
               <div className="product-main-image">
-                <img className="product-main-photo" src={resolveImage(image.src)} alt={`${product.name}, ${image.label.toLowerCase()}`} width="1000" height="1250" />
+                <img className="product-main-photo" src={resolveImage(image.src)} alt={`${imageName}, ${image.label.toLowerCase()}`} width="1000" height="1250" />
               </div>
-              {product.images.length > 1 && (
+              {images.length > 1 && (
                 <div className="product-thumbs" role="group" aria-label="Product views">
-                  {product.images.map((view, index) => (
+                  {images.map((view, index) => (
                     <button key={view.label} type="button" className={`product-thumb${index === imageIndex ? ' is-active' : ''}`} aria-pressed={index === imageIndex} onClick={() => setImageIndex(index)}>
                       <img className="product-thumb-photo" src={resolveImage(view.src)} alt="" width="1000" height="1250" />
                       <span>{view.label}</span>
@@ -2924,6 +3088,28 @@ function ProductPage({ product }) {
               <h1>{product.name}</h1>
               <p className="product-price product-price-large">{formatPrice(product.price)}</p>
               <p className="product-description">{product.description}</p>
+
+              {product.colors.length > 0 && (
+                <fieldset className="color-picker">
+                  <legend>Colour: <strong className="color-picker-name">{selectedColor.name}</strong></legend>
+                  <div className="color-options">
+                    {product.colors.map((option, index) => (
+                      <label key={option.name} className={`color-option${index === colorIndex ? ' is-active' : ''}`} title={option.name}>
+                        <input
+                          className="color-option-input"
+                          type="radio"
+                          name="color"
+                          value={option.name}
+                          checked={index === colorIndex}
+                          onChange={() => { setColorIndex(index); setImageIndex(0); setAdded(false); }}
+                        />
+                        <img className="color-option-photo" src={resolveImage(option.images[0].src)} alt="" width="1000" height="1250" />
+                        <span className="sr-only">{option.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
 
               <fieldset className="size-picker">
                 <legend>Size {sizeError && <span className="size-error" role="alert">Please choose a size</span>}</legend>
@@ -2985,7 +3171,7 @@ function CartPage() {
     try {
       const reference = await placeOrder({
         ...values,
-        items: lines.map(({ productId, name, size, quantity, price }) => ({ productId, name, size, quantity, price })),
+        items: lines.map(({ productId, name, color, size, quantity, price }) => ({ productId, name, color, size, quantity, price })),
         total,
       });
       cart.clear();
@@ -3023,7 +3209,7 @@ function CartPage() {
           {!lines.length ? (
             <div className="archive-empty">
               <h3>Your cart is empty.</h3>
-              <p>Browse our hoodies and T-shirts to get started.</p>
+              <p>Browse our hoodies, T-shirts, and caps to get started.</p>
               <a href="/merch" className="button button-primary cart-empty-button">Shop merch <ArrowRight size={17} aria-hidden="true" /></a>
             </div>
           ) : (
@@ -3031,19 +3217,22 @@ function CartPage() {
               <section className="dashboard-card" aria-labelledby="cart-items-heading">
                 <h2 id="cart-items-heading" className="cart-heading">Items ({cart.count})</h2>
                 <ul className="cart-list">
-                  {lines.map((line) => (
-                    <li key={`${line.productId}-${line.size}`} className="cart-line">
-                      <a href={`/merch?product=${line.productId}`} className="cart-line-image"><img className="cart-line-photo" src={resolveImage(line.product.images[0].src)} alt="" width="1000" height="1250" /></a>
+                  {lines.map((line) => {
+                    const link = `/merch?product=${line.productId}${line.color ? `&color=${encodeURIComponent(line.color)}` : ''}`;
+                    return (
+                    <li key={`${line.productId}-${line.color}-${line.size}`} className="cart-line">
+                      <a href={link} className="cart-line-image"><img className="cart-line-photo" src={resolveImage(line.image.src)} alt="" width="1000" height="1250" /></a>
                       <div className="cart-line-info">
-                        <a href={`/merch?product=${line.productId}`} className="cart-line-name">{line.name}</a>
-                        <span>Size {line.size} · {formatPrice(line.price)}</span>
+                        <a href={link} className="cart-line-name">{line.name}</a>
+                        <span>{line.color && `${line.color} · `}Size {line.size} · {formatPrice(line.price)}</span>
                         <div className="cart-line-actions">
-                          <QuantityStepper value={line.quantity} onChange={(next) => cart.setQuantity(line.productId, line.size, next)} label={`Quantity of ${line.name}, size ${line.size}`} />
-                          <button type="button" className="admin-link-button" onClick={() => cart.remove(line.productId, line.size)}>Remove</button>
+                          <QuantityStepper value={line.quantity} onChange={(next) => cart.setQuantity(line.productId, line.color, line.size, next)} label={`Quantity of ${itemLabel(line)}, size ${line.size}`} />
+                          <button type="button" className="admin-link-button" onClick={() => cart.remove(line.productId, line.color, line.size)}>Remove</button>
                         </div>
                       </div>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
                 <div className="cart-total">
                   <span>Total</span>
@@ -3114,13 +3303,15 @@ function MerchPromo() {
 // A smaller merch banner for other pages.
 function MerchBanner() {
   const { shopProducts } = useProducts();
-  const product = shopProducts.find((entry) => entry.id === 'hoodie-green') ?? shopProducts[0];
+  const hoodie = shopProducts.find((entry) => entry.id === 'hoodie');
+  const product = hoodie ?? shopProducts[0];
   if (!product) return null;
+  const photo = hoodie ? colorImages(hoodie, 'Green')[0] : product.images[0];
   return (
     <section className="section section-compact">
       <div className="container">
         <aside className="merch-banner" aria-label="Club merch">
-          <img className="merch-banner-photo" src={resolveImage(product.images[0].src)} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
+          <img className="merch-banner-photo" src={resolveImage(photo.src)} alt="" width="1000" height="1250" loading="lazy" decoding="async" />
           <div>
             <h2>Rep the club at our next event.</h2>
             <p>Mind Over Matter merch is now available to order.</p>

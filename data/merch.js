@@ -30,6 +30,7 @@ export const productCategories = ['Hoodies', 'T-shirts', 'Caps', 'Bucket hats', 
 export const sizeOptions = ['S', 'M', 'L', 'XL', 'XXL', 'One size'];
 export const imageLabels = ['Front', 'Back', 'Side', 'Detail'];
 export const MAX_PRODUCT_IMAGES = 4;
+export const MAX_PRODUCT_COLORS = 8;
 
 const builtInImages = {
   'hoodie-black-front': hoodieBlackFront,
@@ -69,88 +70,41 @@ const teeDetails = ['Classic crew-neck T-shirt', 'Emblem printed on the left upp
 const capDetails = ['Structured six-panel cap with a curved peak', 'Adjustable strap at the back'];
 const bucketHatDetails = ['Soft cotton bucket hat with a stitched brim', 'Side air vents'];
 const view = (key, label) => ({ src: `asset:${key}`, label });
+// A colour option with its own photos. `legacyId` is the separate product this colour used to be, before colours
+// were combined into one product (see the "Combine colours" tool in the dashboard).
+const color = (name, legacyId, ...images) => ({ name, legacyId, images });
 
 // The starter catalogue: shown until products are imported in the dashboard, then used for that import.
 export const starterProducts = [
   {
-    id: 'hoodie-black',
-    name: 'Black hoodie',
+    id: 'hoodie',
+    name: 'Hoodie',
     category: 'Hoodies',
     price: HOODIE_PRICE,
     sizes: CLOTHING_SIZES,
-    images: [view('hoodie-black-front', 'Front'), view('hoodie-black-back', 'Back')],
-    description: 'A classic black hoodie with the Mind Over Matter emblem on the chest and the bold “Mind over Matter” wordmark across the upper back.',
-    details: [...hoodieDetails, 'Mind over Matter wordmark on the upper back'],
-  },
-  {
-    id: 'hoodie-green',
-    name: 'Green hoodie',
-    category: 'Hoodies',
-    price: HOODIE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('hoodie-green-front', 'Front')],
-    description: 'Our signature green, with the Mind Over Matter emblem on the chest. Simple, warm, and easy to wear every day.',
+    colors: [
+      color('Black', 'hoodie-black', view('hoodie-black-front', 'Front'), view('hoodie-black-back', 'Back')),
+      color('Green', 'hoodie-green', view('hoodie-green-front', 'Front')),
+      color('White', 'hoodie-white', view('hoodie-white-front', 'Front'), view('hoodie-white-back', 'Back')),
+    ],
+    description: 'A warm pullover hoodie with the Mind Over Matter emblem on the chest. The black and white hoodies also carry the bold “Mind over Matter” wordmark across the upper back.',
     details: hoodieDetails,
   },
   {
-    id: 'hoodie-white',
-    name: 'White hoodie',
-    category: 'Hoodies',
-    price: HOODIE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('hoodie-white-front', 'Front'), view('hoodie-white-back', 'Back')],
-    description: 'A clean white hoodie with the emblem on the chest and the colourful “Mind over Matter” wordmark across the upper back.',
-    details: [...hoodieDetails, 'Mind over Matter wordmark on the upper back'],
-  },
-  {
-    id: 'tee-black',
-    name: 'Black T-shirt',
+    id: 'tee',
+    name: 'T-shirt',
     category: 'T-shirts',
     price: TEE_PRICE,
     sizes: CLOTHING_SIZES,
-    images: [view('tee-black-front', 'Front'), view('tee-black-back', 'Back')],
-    description: `A black T-shirt with the emblem on the chest and our motto on the back: “Mind over Matter: ${merchTagline}”.`,
-    details: [...teeDetails, 'Script motto in white on the upper back'],
-  },
-  {
-    id: 'tee-green-white-print',
-    name: 'Green T-shirt, white print',
-    category: 'T-shirts',
-    price: TEE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('tee-green-white-print-front', 'Front'), view('tee-green-white-print-back', 'Back')],
-    description: `Signature green with a crisp white emblem on the chest and our motto on the back: “${merchTagline}”.`,
-    details: [...teeDetails, 'White script motto on the upper back'],
-  },
-  {
-    id: 'tee-green-black-print',
-    name: 'Green T-shirt, black print',
-    category: 'T-shirts',
-    price: TEE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('tee-green-black-print-front', 'Front'), view('tee-green-black-print-back', 'Back')],
-    description: `Signature green with a bold black emblem on the chest and our motto on the back: “${merchTagline}”.`,
-    details: [...teeDetails, 'Black script motto on the upper back'],
-  },
-  {
-    id: 'tee-white-black-print',
-    name: 'White T-shirt, black print',
-    category: 'T-shirts',
-    price: TEE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('tee-white-black-print-front', 'Front'), view('tee-white-black-print-back', 'Back')],
-    description: `Crisp white with a black emblem on the chest and our motto on the back: “Mind over Matter: ${merchTagline}”.`,
-    details: [...teeDetails, 'Black script motto on the upper back'],
-  },
-  {
-    id: 'tee-white-green-print',
-    name: 'White T-shirt, green print',
-    category: 'T-shirts',
-    price: TEE_PRICE,
-    sizes: CLOTHING_SIZES,
-    images: [view('tee-white-green-print-front', 'Front'), view('tee-white-green-print-back', 'Back')],
-    description: `Crisp white with the emblem in our signature green on the chest and our motto on the back: “${merchTagline}”.`,
-    details: [...teeDetails, 'Green script motto on the upper back'],
+    colors: [
+      color('Black', 'tee-black', view('tee-black-front', 'Front'), view('tee-black-back', 'Back')),
+      color('Green, white print', 'tee-green-white-print', view('tee-green-white-print-front', 'Front'), view('tee-green-white-print-back', 'Back')),
+      color('Green, black print', 'tee-green-black-print', view('tee-green-black-print-front', 'Front'), view('tee-green-black-print-back', 'Back')),
+      color('White, black print', 'tee-white-black-print', view('tee-white-black-print-front', 'Front'), view('tee-white-black-print-back', 'Back')),
+      color('White, green print', 'tee-white-green-print', view('tee-white-green-print-front', 'Front'), view('tee-white-green-print-back', 'Back')),
+    ],
+    description: `A classic crew-neck T-shirt with the emblem on the chest and our motto on the back: “Mind over Matter: ${merchTagline}”.`,
+    details: [...teeDetails, 'Script motto on the upper back'],
   },
   {
     id: 'cap-emblem',
@@ -192,7 +146,13 @@ export const starterProducts = [
     description: 'A light grey bucket hat with the colourful “Mind over Matter” wordmark across the front.',
     details: [...bucketHatDetails, 'Mind over Matter wordmark printed on the front'],
   },
-].map((product, index) => ({ ...product, available: true, sortOrder: index }));
+].map((product, index) => ({
+  ...product,
+  images: product.colors?.[0].images ?? product.images,
+  colors: product.colors ?? [],
+  available: true,
+  sortOrder: index,
+}));
 
 const shillings = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
 

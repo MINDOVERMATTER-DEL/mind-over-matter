@@ -219,7 +219,11 @@ export async function removeMessage(id) {
 /* ---------- Merch products ---------- */
 // Anyone can read products; only admins can add, edit, or delete them (see firestore.rules).
 
+// A product can come in several colours, each with its own photos: colors: [{ name, images }]. The product's
+// main `images` are always its first colour's photos. In the database the first colour's photos are stored only
+// once, in `images` (a product document has a 1 MB limit, and uploaded photos are large).
 function toProduct(id, data) {
+  const images = data.images ?? [];
   return {
     id,
     name: data.name,
@@ -228,13 +232,16 @@ function toProduct(id, data) {
     sizes: data.sizes ?? [],
     description: data.description ?? '',
     details: data.details ?? [],
-    images: data.images ?? [],
+    images,
+    colors: (data.colors ?? []).map((entry, index) => ({ name: entry.name, images: index === 0 ? images : entry.images ?? [] })),
     available: data.available !== false,
     sortOrder: data.sortOrder ?? 0,
   };
 }
 
-function cleanProduct({ name, category, price, sizes, description, details, images, available, sortOrder }) {
+const cleanImages = (images) => images.map(({ src, label }) => ({ src, label }));
+
+function cleanProduct({ name, category, price, sizes, description, details, images, colors = [], available, sortOrder }) {
   return {
     name: name.trim(),
     category,
@@ -242,10 +249,16 @@ function cleanProduct({ name, category, price, sizes, description, details, imag
     sizes,
     description: description.trim(),
     details: details.map((detail) => detail.trim()).filter(Boolean),
-    images: images.map(({ src, label }) => ({ src, label })),
+    images: cleanImages(colors.length ? colors[0].images : images),
+    colors: colors.map((entry, index) => ({ name: entry.name.trim(), images: index === 0 ? [] : cleanImages(entry.images) })),
     available: Boolean(available),
     sortOrder: Number(sortOrder) || 0,
   };
+}
+
+// Rough size of a product as stored, to warn before it passes the database's 1 MB limit per product.
+export function productStorageSize(fields) {
+  return JSON.stringify(cleanProduct(fields)).length;
 }
 
 export async function fetchProducts() {
@@ -268,6 +281,16 @@ export async function updateProduct(id, fields) {
 export async function removeProduct(id) {
   const { firestore, db } = await loadDatabase();
   await firestore.deleteDoc(firestore.doc(db, 'products', id));
+}
+
+// Saves `product` under its id and deletes the products in `removeIds`, all at once (used to combine
+// one-product-per-colour into a single product with colour options).
+export async function combineProducts({ id, ...fields }, removeIds) {
+  const { firestore, db } = await loadDatabase();
+  const batch = firestore.writeBatch(db);
+  batch.set(firestore.doc(db, 'products', id), { ...cleanProduct(fields), createdAt: firestore.serverTimestamp() });
+  removeIds.forEach((removeId) => batch.delete(firestore.doc(db, 'products', removeId)));
+  await batch.commit();
 }
 
 // Copies the starter catalogue into the database (keeping the same ids, so existing carts still match).
@@ -313,7 +336,8 @@ export function orderReference(id) {
   return `MOM-${id.slice(0, 6).toUpperCase()}`;
 }
 
-// items: [{ productId, name, size, quantity, price }] with price null until prices are set.
+// items: [{ productId, name, color, size, quantity, price }]: color is '' for products without colour options,
+// and price is null until prices are set.
 export async function placeOrder({ name, phone, email, delivery, note, items, total }) {
   const { firestore, db } = await loadDatabase();
   const ref = await firestore.addDoc(firestore.collection(db, 'orders'), {
@@ -322,8 +346,8 @@ export async function placeOrder({ name, phone, email, delivery, note, items, to
     email: email.trim(),
     delivery,
     note: note.trim(),
-    items: items.map(({ productId, name: itemName, size, quantity, price }) => ({
-      productId, name: itemName, size, quantity, price: price ?? null,
+    items: items.map(({ productId, name: itemName, color: itemColor, size, quantity, price }) => ({
+      productId, name: itemName, color: itemColor ?? '', size, quantity, price: price ?? null,
     })),
     total: total ?? null,
     status: 'new',
