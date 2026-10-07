@@ -1,11 +1,12 @@
 import { Component, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
-  Clock, Confetti, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
-  Handshake, Heart, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
+  ArrowClockwise, ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
+  Clock, Compass, Confetti, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
+  Handshake, Heart, House, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
   Newspaper, NotePencil, Package, PencilSimple, Phone, Plant, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
-  SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Truck, UsersThree, WhatsappLogo, X, XLogo,
+  SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Truck, UsersThree, WarningCircle, WhatsappLogo, WifiHigh,
+  WifiSlash, X, XLogo,
 } from './icons.jsx';
 import { AnimatePresence, MotionConfig, motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { Analytics } from '@vercel/analytics/react';
@@ -539,6 +540,13 @@ function useRemoteList(fetcher, samples) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // If loading failed (usually a dropped connection), try again as soon as the device is back online.
+  useEffect(() => {
+    if (state.status !== 'error') return undefined;
+    window.addEventListener('online', refresh);
+    return () => window.removeEventListener('online', refresh);
+  }, [state.status, refresh]);
 
   return { ...state, refresh };
 }
@@ -3124,23 +3132,31 @@ function MerchBanner() {
   );
 }
 
-function NotFoundPage() {
+// Error pages that keep the site header and footer, so visitors can carry on from them.
+function ErrorPage({ label, icon: ErrorIcon, title, text, children }) {
   return (
     <PageLayout pageClass="page-main">
-      <section className="page-hero not-found">
+      <section className="page-hero error-page">
         <motion.div className="container narrow-container" initial="hidden" animate="shown" variants={introVariants}>
-          <motion.p className="eyebrow" variants={introItemVariants}>Error 404</motion.p>
-          <motion.h1 variants={introItemVariants}>We couldn’t find that page.</motion.h1>
-          <motion.p className="lede" variants={introItemVariants}>The link may be broken, or the page may have moved. Try one of these instead:</motion.p>
-          <motion.div className="hero-actions" variants={introItemVariants}>
-            <a href="/" className="button button-primary">Go to the home page <ArrowRight size={17} aria-hidden="true" /></a>
-            <a href="/event" className="button button-ghost">Events & programs</a>
-            <a href="/blog" className="button button-ghost">Blog</a>
-            <a href="/contact-us" className="button button-ghost">Contact us</a>
-          </motion.div>
+          <motion.span className="error-page-icon" variants={introItemVariants}><ErrorIcon size={40} aria-hidden="true" /></motion.span>
+          <motion.p className="eyebrow" variants={introItemVariants}>{label}</motion.p>
+          <motion.h1 variants={introItemVariants}>{title}</motion.h1>
+          <motion.p className="lede" variants={introItemVariants}>{text}</motion.p>
+          <motion.div className="hero-actions" variants={introItemVariants}>{children}</motion.div>
         </motion.div>
       </section>
     </PageLayout>
+  );
+}
+
+function NotFoundPage() {
+  return (
+    <ErrorPage label="Error 404 · Page not found" icon={Compass} title="We couldn’t find that page." text="The link may be broken, or the page may have moved. Try one of these instead:">
+      <a href="/" className="button button-primary"><House size={17} aria-hidden="true" /> Go to the home page</a>
+      <a href="/event" className="button button-ghost">Events & programs</a>
+      <a href="/blog" className="button button-ghost">Blog</a>
+      <a href="/contact-us" className="button button-ghost">Contact us</a>
+    </ErrorPage>
   );
 }
 
@@ -3212,23 +3228,86 @@ const NOT_FOUND_TITLE = 'Page not found | Mind Over Matter';
 
 // Shown only when rendering fails. Slow start-up is covered by the boot loader in each page's HTML,
 // which appears only if the app takes longer than 0.4s to start.
+// Shown when a page breaks while loading. It doesn't use the site header and footer (they may be what broke),
+// and it says so plainly when the real cause is a lost internet connection.
 function LoadErrorScreen() {
+  const offline = !window.navigator.onLine;
+  const ErrorIcon = offline ? WifiSlash : WarningCircle;
   return (
-    <div className="page-transition is-visible is-initial" role="alert">
-      <div className="page-transition-content">
-        <div className="page-transition-emblem" aria-hidden="true">
-          <span className="page-transition-orbit page-transition-orbit-outer" />
-          <span className="page-transition-orbit page-transition-orbit-inner" />
-          <span className="page-transition-mark"><img src={logoEmblem} alt="" width="64" height="64" /></span>
+    <main className="error-screen" role="alert">
+      <motion.div className="error-screen-card" initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: easeOutExpo }}>
+        <div className="error-screen-badge" aria-hidden="true">
+          <img src={logoEmblem} alt="" width="64" height="64" />
+          <span className="error-screen-icon"><ErrorIcon size={20} /></span>
         </div>
-        <div className="page-transition-copy">
-          <strong>Mind Over Matter</strong>
-          <span>Something went wrong while loading this page.</span>
+        <p className="eyebrow">{offline ? 'No internet connection' : 'Something went wrong'}</p>
+        <h1>{offline ? 'You’re offline.' : 'This page didn’t load properly.'}</h1>
+        <p className="error-screen-text">
+          {offline
+            ? 'Check your Wi-Fi or mobile data, then try again.'
+            : 'It’s not you, it’s us. Please try again. If it keeps happening, let us know and we’ll fix it.'}
+        </p>
+        <div className="error-screen-actions">
+          <button type="button" className="button button-primary" onClick={() => window.location.reload()}>
+            <ArrowClockwise size={17} aria-hidden="true" /> Try again
+          </button>
+          <a href="/" className="button button-ghost"><House size={17} aria-hidden="true" /> Home</a>
         </div>
-        <button type="button" className="button button-primary" onClick={() => window.location.reload()}>
-          Try again
-        </button>
-      </div>
+        {!offline && (
+          <a className="text-link error-screen-contact" href={`mailto:${contact.email}?subject=${encodeURIComponent('Problem on the website')}`}>
+            Report the problem: {contact.email}
+          </a>
+        )}
+      </motion.div>
+    </main>
+  );
+}
+
+// A small notice at the bottom of the screen while the device is offline, and briefly once it reconnects.
+function ConnectionNotice() {
+  const [connection, setConnection] = useState(() => (window.navigator.onLine ? 'online' : 'offline'));
+
+  useEffect(() => {
+    let timer;
+    function goOffline() {
+      window.clearTimeout(timer);
+      setConnection('offline');
+    }
+    function goOnline() {
+      window.clearTimeout(timer);
+      setConnection('back');
+      timer = window.setTimeout(() => setConnection('online'), 3500);
+    }
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
+
+  const offline = connection === 'offline';
+  return (
+    <div className="connection-notice-region" role="status" aria-live="polite">
+      <AnimatePresence>
+        {connection !== 'online' && (
+          <motion.div
+            key={connection}
+            className={`connection-notice${offline ? ' is-offline' : ' is-back'}`}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.35, ease: easeOutExpo }}
+          >
+            {offline ? <WifiSlash className="connection-notice-icon" size={20} aria-hidden="true" /> : <WifiHigh className="connection-notice-icon" size={20} aria-hidden="true" />}
+            <span>
+              <strong>{offline ? 'You’re offline.' : 'You’re back online.'}</strong>
+              {offline && ' Some content may not load until you reconnect.'}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -3352,6 +3431,7 @@ function App() {
           </CartProvider>
         </SiteDataProvider>
       </IconContext.Provider>
+      <ConnectionNotice />
       {/* Vercel visitor and page-speed statistics (anonymous, no cookies). Admin visits are left out. */}
       <Analytics beforeSend={skipAdminPages} />
       <SpeedInsights route={`/${page}`} beforeSend={skipAdminPages} />
@@ -3365,4 +3445,12 @@ if (rootElement) {
 
   if (import.meta.hot) import.meta.hot.data.root = root;
   root.render(<App />);
+}
+
+// The service worker shows a friendly "You're offline" page when someone opens the site with no connection
+// (see pages/public/sw.js). It only runs on the live site, so it never gets in the way while developing.
+if (import.meta.env.PROD && 'serviceWorker' in window.navigator) {
+  window.addEventListener('load', () => {
+    window.navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }

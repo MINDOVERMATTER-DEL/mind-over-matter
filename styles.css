@@ -1197,8 +1197,137 @@ input {
   line-height: 0.98;
 }
 
-.not-found {
-  padding-block: 2rem 4rem;
+/* Error pages inside the site layout (404). */
+.error-page {
+  padding-block: 2rem 5rem;
+}
+
+.error-page-icon {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  color: var(--accent-bright);
+}
+
+/* Full-screen error (a page that broke while loading, or no connection). No header or footer here. */
+.error-screen {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: 1.5rem 1rem;
+  background:
+    repeating-linear-gradient(132deg, transparent 0 34px, rgb(255 255 255 / 6%) 34px 35px),
+    var(--metal-emerald);
+}
+
+.error-screen-card {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 34rem);
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.25rem, 5vw, 2.75rem);
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 0 30px 60px rgb(3 38 28 / 35%);
+  text-align: center;
+}
+
+.error-screen-badge {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.error-screen-badge img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgb(13 122 92 / 12%);
+}
+
+.error-screen-icon {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--panel);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+
+.error-screen-card h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.error-screen-text {
+  max-width: 26rem;
+  margin: 1rem 0 0;
+  color: var(--muted);
+}
+
+.error-screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.error-screen-contact {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+/* "You're offline" / "You're back online" notice at the bottom of the screen. */
+.connection-notice-region {
+  position: fixed;
+  right: 0;
+  bottom: 1.25rem;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding-inline: 1rem;
+  pointer-events: none;
+}
+
+.connection-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: 34rem;
+  padding: 0.8rem 1.15rem;
+  border-radius: 999px;
+  box-shadow: 0 16px 36px rgb(3 38 28 / 30%);
+  color: #fff;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  pointer-events: auto;
+}
+
+.connection-notice.is-offline {
+  background: #1f2b28;
+}
+
+.connection-notice.is-back {
+  background: var(--metal-emerald);
+}
+
+.connection-notice-icon {
+  flex-shrink: 0;
 }
 
 /* Long-form text pages (privacy policy). */

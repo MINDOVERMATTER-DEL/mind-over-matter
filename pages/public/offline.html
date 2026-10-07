@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#075c47" />
+    <title>You’re offline | Mind Over Matter</title>
+    <!--
+      Shown by the service worker (sw.js) when someone opens the site with no internet connection.
+      Everything is inside this one file (styles and the logo too), because nothing else can be downloaded offline.
+    -->
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        min-height: 100svh;
+        margin: 0;
+        padding: 1.5rem 1rem;
+        background:
+          repeating-linear-gradient(132deg, transparent 0 34px, rgb(255 255 255 / 6%) 34px 35px),
+          linear-gradient(135deg, #17b58a 0%, #0b7a5e 32%, #075c47 58%, #0e8a68 78%, #054634 100%);
+        color: #0c2620;
+        font-family: "DM Sans Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+      }
+      .card {
+        display: grid;
+        justify-items: center;
+        width: min(100%, 34rem);
+        padding: clamp(2rem, 5vw, 3rem) clamp(1.25rem, 5vw, 2.75rem);
+        border: 1px solid rgb(255 255 255 / 40%);
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 30px 60px rgb(3 38 28 / 35%);
+        text-align: center;
+        animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .badge { position: relative; margin-bottom: 1.5rem; }
+      .badge img { display: block; width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 0 6px rgb(13 122 92 / 12%); }
+      .badge span {
+        position: absolute;
+        right: -6px;
+        bottom: -4px;
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        background: #f26b1d;
+        color: #fff;
+      }
+      .eyebrow { margin: 0 0 0.8rem; color: #b93d0b; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+      h1 {
+        margin: 0;
+        color: #0a6b55;
+        font-family: "Fraunces Variable", Georgia, "Times New Roman", serif;
+        font-size: clamp(1.9rem, 5vw, 2.6rem);
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+      }
+      p.text { max-width: 26rem; margin: 1rem 0 0; color: #3a554d; }
+      ul { margin: 1.25rem 0 0; padding: 0; list-style: none; color: #3a554d; font-size: 0.92rem; text-align: left; }
+      li { position: relative; padding-left: 1.4rem; }
+      li + li { margin-top: 0.35rem; }
+      li::before { content: ""; position: absolute; top: 0.6em; left: 0.3rem; width: 6px; height: 6px; border-radius: 50%; background: #0b7a5e; }
+      button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.75rem;
+        padding: 0.85rem 1.4rem;
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #17b58a 0%, #0b7a5e 45%, #054634 100%);
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 22px rgb(6 78 59 / 30%);
+      }
+      button:focus-visible { outline: 3px solid #f26b1d; outline-offset: 3px; }
+      .status { min-height: 1.5em; margin: 1rem 0 0; color: #0b7a5e; font-size: 0.9rem; font-weight: 600; }
+      @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+      @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="badge" aria-hidden="true">
+        <img src="data:image/webp;base64,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" width="72" height="72" alt="" />
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256" fill="currentColor"><path d="M216.88,207.93a12,12,0,1,1-17.76,16.14L147.78,167.6a56.06,56.06,0,0,0-52.71,7.1,12,12,0,0,1-14.14-19.4,79.35,79.35,0,0,1,41.92-15.12L103.51,118.9a104.18,104.18,0,0,0-40.06,19.55,12,12,0,0,1-14.9-18.81A128.46,128.46,0,0,1,85.61,99.21l-17.31-19a151.14,151.14,0,0,0-36.68,22.28A12,12,0,1,1,16.39,83.91a175.52,175.52,0,0,1,35-22.38L39.12,48.07A12,12,0,1,1,56.88,31.93ZM128,188a16,16,0,1,0,16,16A16,16,0,0,0,128,188Zm64.55-49.55a12,12,0,0,0,14.9-18.81A127.27,127.27,0,0,0,170,99.05a12,12,0,0,0-7.87,22.67A103.62,103.62,0,0,1,192.55,138.45Zm47.06-54.54A176.33,176.33,0,0,0,128,44c-3.94,0-7.93.13-11.86.39a12,12,0,1,0,1.59,24c3.4-.23,6.86-.34,10.27-.34a152.24,152.24,0,0,1,96.38,34.46,12,12,0,1,0,15.23-18.55Z"/></svg>
+        </span>
+      </div>
+      <p class="eyebrow">No internet connection</p>
+      <h1>You’re offline.</h1>
+      <p class="text">We can’t reach Mind Over Matter right now. Check your connection, then try again.</p>
+      <ul>
+        <li>Make sure Wi-Fi or mobile data is turned on.</li>
+        <li>Turn airplane mode off.</li>
+        <li>Move closer to your router, or try another network.</li>
+      </ul>
+      <button type="button" id="retry">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>
+        Try again
+      </button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </main>
+    <script>
+      // Reload by hand, or automatically as soon as the connection comes back.
+      document.getElementById('retry').addEventListener('click', () => window.location.reload());
+      window.addEventListener('online', () => {
+        document.getElementById('status').textContent = 'You’re back online. Loading…';
+        window.setTimeout(() => window.location.reload(), 600);
+      });
+    </script>
+  </body>
+</html>
