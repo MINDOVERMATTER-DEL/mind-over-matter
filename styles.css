@@ -3224,6 +3224,10 @@ input {
   font-size: 0.78rem;
 }
 
+.program-credits {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
 .stats-credit-link {
   color: inherit;
   text-decoration: underline;

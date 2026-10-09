@@ -129,7 +129,8 @@ export const programs = [
     kicker: 'Skills that help',
     status: 'Enrollment opening soon',
     icon: 'firstaid',
-    photos: [],
+    photos: ['firstAid', 'firstAidCpr'],
+    photoAlt: 'Students in Kenya sitting under a tent during a community first aid training',
     text: 'Practical training that helps students recognise when a peer is struggling, offer first support with care, and guide them towards professional help.',
   },
   {
@@ -151,7 +152,8 @@ export const programs = [
     kicker: 'Professional support',
     schedule: 'In person, plus online sessions & forums',
     icon: 'coffee',
-    photos: [],
+    photos: ['cafe'],
+    photoAlt: 'People chatting over coffee at the counter of a café in Nairobi',
     text: 'Where we connect young people with mental health professionals, including psychologists and therapists, who offer their time pro bono. We also run online sessions and forums, so you can join from wherever you are.',
   },
 ];

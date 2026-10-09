@@ -40,6 +40,9 @@ import ecotherapyCavePhoto from '../assets/images/programs/ecotherapy-cave.webp'
 import safeSpacesPhoto from '../assets/images/programs/safe-spaces.webp';
 import bookClubPhoto from '../assets/images/programs/book-club.webp';
 import bookClubLibraryPhoto from '../assets/images/programs/book-club-library.webp';
+import firstAidPhoto from '../assets/images/programs/first-aid-training.webp';
+import firstAidCprPhoto from '../assets/images/programs/first-aid-cpr.webp';
+import cafePhoto from '../assets/images/programs/mental-health-cafe.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
 import articlesPdf from '../documents/MIND OVER MATTER ARTICLES OF ASSOCIATION.pdf?url';
@@ -90,6 +93,9 @@ const programPhotos = {
   safeSpaces: safeSpacesPhoto,
   bookClub: bookClubPhoto,
   bookClubLibrary: bookClubLibraryPhoto,
+  firstAid: firstAidPhoto,
+  firstAidCpr: firstAidCprPhoto,
+  cafe: cafePhoto,
 };
 
 const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto, james: jamesPhoto };
@@ -1305,6 +1311,15 @@ function EventsPage() {
           <div className="program-rows">
             {programs.map((program, index) => <ProgramRow key={program.title} program={program} number={index + 1} />)}
           </div>
+          <p className="stats-sources program-credits">
+            Photo credits: first aid training in the community by{' '}
+            <a className="stats-credit-link" href="https://commons.wikimedia.org/wiki/File:First_Aid_training_in_the_Community.jpg" target="_blank" rel="noopener noreferrer">Justus Odundo</a>
+            {' '}and first aid training in Sagana, Kenya by{' '}
+            <a className="stats-credit-link" href="https://commons.wikimedia.org/wiki/File:Adventure_First_Aid_training,_Sagana,_Kenya_.jpg" target="_blank" rel="noopener noreferrer">Cory H Jones</a>
+            {' '}(both CC BY-SA 4.0, cropped); café in Nairobi by{' '}
+            <a className="stats-credit-link" href="https://www.flickr.com/photos/18288598@N00/4696324652" target="_blank" rel="noopener noreferrer">whiteafrican</a>
+            {' '}(CC BY 2.0).
+          </p>
         </div>
       </section>
 

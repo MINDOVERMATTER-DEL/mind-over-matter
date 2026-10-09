@@ -9,6 +9,7 @@ Every image the website uses lives in this folder.
 | `illustrations/` | Artwork and graphics, such as the home page illustration. |
 | `community/` | Photos of club life (gatherings, sessions) used on the Home and About pages. Full-size originals are in `community/originals/`. |
 | `merch/` | Product photos for the shop, cut from the design sheets. |
+| `programs/` | Photos for the Events page programs. Club photos, plus three openly licensed ones credited on the page: `first-aid-training.webp` (Justus Odundo, CC BY-SA 4.0), `first-aid-cpr.webp` (Cory H Jones, CC BY-SA 4.0), `mental-health-cafe.webp` (whiteafrican on Flickr, CC BY 2.0). Full-size originals are in `programs/originals/` (kept out of git). |
 | `stats/` | Background photos for the home page statistics. `hospital-waiting-room.webp`: CCBRT Hospital, Tanzania, by Australia's Department of Foreign Affairs and Trade, CC BY 2.0 (credited on the page; <https://commons.wikimedia.org/w/index.php?curid=32167769>). |
 
 Add new folders as needed (for example `events/` or `blog/`).
