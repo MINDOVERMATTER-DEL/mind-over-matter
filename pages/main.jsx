@@ -1,11 +1,11 @@
 import { Component, createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  ArrowClockwise, ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
-  Clock, Compass, Confetti, EnvelopeSimple, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
-  Handshake, Heart, House, IconContext, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
-  Newspaper, NotePencil, Package, PencilSimple, Phone, Plant, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
-  SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Truck, UsersThree, WarningCircle, WhatsappLogo, WifiHigh,
+  ArrowClockwise, ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, Barricade, Books, Buildings, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
+  BookOpen, Clock, Coffee, Compass, Confetti, EnvelopeSimple, FirstAidKit, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
+  GlobeHemisphereEast, Handshake, Heart, Heartbeat, House, IconContext, Lifebuoy, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
+  Newspaper, NotePencil, Package, PencilSimple, Phone, Pill, Plant, PuzzlePiece, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
+  SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Tree, Truck, User, UsersThree, WarningCircle, WhatsappLogo, WifiHigh,
   WifiSlash, X, XLogo,
 } from './icons.jsx';
 import { AnimatePresence, MotionConfig, motion, useMotionValueEvent, useScroll } from 'motion/react';
@@ -33,6 +33,13 @@ import krystalPhoto from '../assets/images/team/krystal-karan.webp';
 import jamesPhoto from '../assets/images/team/james-mvoi.webp';
 import clubGroupPhoto from '../assets/images/community/club-group.webp';
 import supportSessionPhoto from '../assets/images/community/support-session.webp';
+import togetherPhoto from '../assets/images/community/together.webp';
+import triviaPhoto from '../assets/images/programs/trivia-thursdays.webp';
+import ecotherapyForestPhoto from '../assets/images/programs/ecotherapy-forest.webp';
+import ecotherapyCavePhoto from '../assets/images/programs/ecotherapy-cave.webp';
+import safeSpacesPhoto from '../assets/images/programs/safe-spaces.webp';
+import bookClubPhoto from '../assets/images/programs/book-club.webp';
+import bookClubLibraryPhoto from '../assets/images/programs/book-club-library.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
 import articlesPdf from '../documents/MIND OVER MATTER ARTICLES OF ASSOCIATION.pdf?url';
@@ -52,18 +59,37 @@ const siteLinks = [
 
 
 const icons = {
+  barricade: Barricade,
+  book: BookOpen,
+  books: Books,
+  buildings: Buildings,
+  coffee: Coffee,
+  firstaid: FirstAidKit,
   graduation: GraduationCap,
   hand: HandHeart,
   handshake: Handshake,
   heart: Heart,
+  lifebuoy: Lifebuoy,
   lock: LockKey,
   megaphone: Megaphone,
   message: ChatsCircle,
   party: Confetti,
+  pill: Pill,
+  puzzle: PuzzlePiece,
   share: ShareNetwork,
   sprout: Plant,
   stethoscope: Stethoscope,
+  tree: Tree,
   users: UsersThree,
+};
+
+const programPhotos = {
+  trivia: triviaPhoto,
+  ecotherapyForest: ecotherapyForestPhoto,
+  ecotherapyCave: ecotherapyCavePhoto,
+  safeSpaces: safeSpacesPhoto,
+  bookClub: bookClubPhoto,
+  bookClubLibrary: bookClubLibraryPhoto,
 };
 
 const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto, james: jamesPhoto };
@@ -137,6 +163,8 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 const REVEAL_SELECTOR = [
   '.section-heading', '.feature-card', '.about-card', '.team-card', '.post-card', '.program-card', '.event-card',
   '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase', '.photo-tile', '.flip-card',
+  '.stat-card', '.stats-footer', '.why-item', '.why-photo', '.approach-step', '.approach-line',
+  '.program-media', '.program-copy',
   '.contact-card', '.contact-form-card', '.archive-empty', '.two-col > div:not(.section-heading)',
 ].join(', ');
 const REVEAL_STAGGER_MS = 80;
@@ -183,11 +211,69 @@ function useScrollReveal() {
   }, []);
 }
 
+const TYPE_DELAY_MS = 42;
+const TYPE_PAUSE_MS = 280;
+
+// The quote types itself out the first time it scrolls into view, with a short pause after commas and full
+// stops, then the author fades in. The whole quote sits underneath, invisible, so the banner keeps its size while
+// typing, and screen readers get the full text at once.
+function TypedQuote({ text, author }) {
+  const ref = useRef(null);
+  const [typed, setTyped] = useState(() => (prefersReducedMotion() ? text.length : 0));
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || prefersReducedMotion() || !('IntersectionObserver' in window)) {
+      setTyped(text.length);
+      return undefined;
+    }
+
+    let timer;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      if (document.hidden) {
+        setTyped(text.length);
+        return;
+      }
+      let count = 0;
+      const typeNext = () => {
+        count += 1;
+        setTyped(count);
+        if (count >= text.length) return;
+        const pause = /[,.;:!?]/.test(text[count - 1]) ? TYPE_PAUSE_MS : 0;
+        // A little unevenness makes it feel typed by a person.
+        timer = window.setTimeout(typeNext, TYPE_DELAY_MS + pause + Math.random() * 40);
+      };
+      timer = window.setTimeout(typeNext, 400);
+    }, { threshold: 0.6 });
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [text]);
+
+  const done = typed >= text.length;
+  return (
+    <blockquote ref={ref} className={`quote-band${done ? ' is-typed' : ''}`}>
+      <Quotes className="quote-icon" size={30} aria-hidden="true" />
+      <p className="typed-quote">
+        <span className="sr-only">{text}</span>
+        <span className="typed-quote-space" aria-hidden="true">{text}</span>
+        <span className="typed-quote-text" aria-hidden="true">{text.slice(0, typed)}<span className="typed-caret" /></span>
+      </p>
+      <cite className="typed-quote-author">{author}</cite>
+    </blockquote>
+  );
+}
+
 const COUNT_UP_MS = 1400;
 const easeOutCubic = (t) => 1 - (1 - t) ** 3;
 
 // Counts up from zero the first time the number scrolls into view. Screen readers get the final value.
-function CountUp({ value, suffix = '' }) {
+function CountUp({ value, prefix = '', suffix = '', className }) {
   const ref = useRef(null);
   const [display, setDisplay] = useState(() => (prefersReducedMotion() ? value : 0));
 
@@ -224,9 +310,9 @@ function CountUp({ value, suffix = '' }) {
   }, [value]);
 
   return (
-    <strong ref={ref}>
-      <span aria-hidden="true">{display}{suffix}</span>
-      <span className="sr-only">{value}{suffix}</span>
+    <strong ref={ref} className={className}>
+      <span aria-hidden="true">{prefix}{display}{suffix}</span>
+      <span className="sr-only">{prefix}{value}{suffix}</span>
     </strong>
   );
 }
@@ -693,8 +779,7 @@ function PostRow({ post }) {
 function HomePage() {
   const { posts, status } = usePosts();
   const [category, setCategory] = useState('all');
-  const featuredPosts = posts.slice(0, 3);
-  const visiblePosts = category === 'all' ? posts : posts.filter((post) => post.category === category);
+  const visiblePosts = (category === 'all' ? posts : posts.filter((post) => post.category === category)).slice(0, 3);
 
   return (
     <PageLayout>
@@ -715,10 +800,10 @@ function HomePage() {
           <motion.div className="hero-copy" initial="hidden" animate="shown" variants={introVariants}>
             <motion.p className="eyebrow" variants={introItemVariants}>Students across Kenya · Mental health</motion.p>
             <motion.h1 variants={introItemVariants}>A community where mental health matters.</motion.h1>
-            <motion.p className="lede hero-lede" variants={introItemVariants}>Mind Over Matter is a student-led club building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
+            <motion.p className="lede hero-lede" variants={introItemVariants}>Mind Over Matter is a student-led, youth-driven organisation building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
             <motion.div className="hero-actions" variants={introItemVariants}>
-              <a href="/about-us#get-involved" className="button button-primary">Join the club <ArrowRight size={17} aria-hidden="true" /></a>
-              <a href="/event#programs" className="button button-ghost">See our programs <ArrowUpRight size={17} aria-hidden="true" /></a>
+              <a href="/about-us#get-involved" className="button button-primary hero-button">Join the club <ArrowRight size={16} aria-hidden="true" /></a>
+              <a href="/event#programs" className="button button-ghost hero-button">See our programs <ArrowUpRight size={16} aria-hidden="true" /></a>
             </motion.div>
             <motion.ul className="hero-stats" aria-label="Club at a glance" variants={introItemVariants}>
               <li><CountUp value={4} /><span className="hero-stat-label">core programs</span></li>
@@ -733,39 +818,43 @@ function HomePage() {
         </a>
       </section>
 
-      <section id="home-start" className="section section-compact">
+      <MentalHealthStats />
+
+      <section className="section section-compact">
         <div className="container">
-          <blockquote className="quote-band">
-            <Quotes className="quote-icon" size={30} aria-hidden="true" />
-            <p>{quote.text}</p>
-            <cite>{quote.author}</cite>
-          </blockquote>
+          <TypedQuote text={quote.text} author={quote.author} />
         </div>
       </section>
 
       <section className="section">
-        <div className="container">
-          <div className="section-heading">
-            <p className="eyebrow">Our community</p>
-            <h2>Real students, real conversations.</h2>
-            <p className="lede">Every gathering is a chance to talk openly, listen without judgement, and leave feeling a little less alone.</p>
+        <div className="container why-layout">
+          <div className="why-intro">
+            <div className="section-heading why-heading">
+              <p className="eyebrow">Why we exist</p>
+              <h2>Student life carries pressures nobody should carry alone.</h2>
+              <p className="lede">We started Mind Over Matter because we saw what our classmates were facing, and how little support there was.</p>
+            </div>
+            <figure className="why-photo">
+              <img className="why-photo-img" src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" width="960" height="1280" loading="lazy" decoding="async" />
+              <figcaption>Nobody should face it alone.</figcaption>
+            </figure>
           </div>
-          <div className="photo-mosaic">
-            <ClubPhoto src={clubGroupPhoto} alt="Mind Over Matter members gathered together in a lecture hall" caption="The Mind Over Matter family" width="1280" height="960" wide />
-            <ClubPhoto src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" caption="Conversations that matter" width="960" height="1280" />
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container two-col">
-          <div className="section-heading">
-            <p className="eyebrow">Why we exist</p>
-            <h2>Student life carries pressures nobody should carry alone.</h2>
-            <p className="lede">We started Mind Over Matter because we saw what our classmates were facing, and how little support there was.</p>
-          </div>
-          <ol className="problem-list">
-            {problems.map((item) => <li key={item.title}><strong>{item.title}</strong><span>{item.text}</span></li>)}
+          <ol className="why-list">
+            {problems.map((item, index) => (
+              <li key={item.title} className={`why-item${item.chips ? ' is-highlighted' : ''}`}>
+                <span className="why-item-icon"><Icon name={item.icon} size={24} /></span>
+                <div>
+                  <span className="why-item-number">{String(index + 1).padStart(2, '0')}</span>
+                  <strong className="why-item-title">{item.title}</strong>
+                  <p className="why-item-text">{item.text}</p>
+                  {item.chips && (
+                    <ul className="why-chips">
+                      {item.chips.map((chip) => <li key={chip} className="why-chip">{chip}</li>)}
+                    </ul>
+                  )}
+                </div>
+              </li>
+            ))}
           </ol>
         </div>
       </section>
@@ -775,11 +864,25 @@ function HomePage() {
           <div className="section-heading">
             <p className="eyebrow">Our approach</p>
             <h2>A new way of supporting each other.</h2>
+            <p className="lede">Four connected steps that turn awareness into real support.</p>
           </div>
-          <div className="feature-grid">
-            {approach.map((item) => <FeatureCard key={item.title} {...item} />)}
+          <div className="approach-track">
+            {/* The line joining the steps draws itself in when it scrolls into view. */}
+            <span className="approach-line" aria-hidden="true"><span className="approach-line-fill" /></span>
+            <ol className="approach-steps">
+              {approach.map((item, index) => (
+                <li key={item.title} className="approach-step">
+                  <span className="approach-node"><Icon name={item.icon} size={28} /></span>
+                  <div className="approach-card">
+                    <span className="approach-keyword">{String(index + 1).padStart(2, '0')} · {item.keyword}</span>
+                    <h3>{item.title}</h3>
+                    <p>{item.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </div>
-          <div className="hero-actions">
+          <div className="approach-actions">
             <a href="/event#programs" className="button button-primary">Explore programs & services <ArrowRight size={17} aria-hidden="true" /></a>
             <a href="/about-us" className="button button-ghost">Our mission & values <ArrowUpRight size={17} aria-hidden="true" /></a>
           </div>
@@ -788,31 +891,26 @@ function HomePage() {
 
       <section id="featured" className="section">
         <div className="container">
-          <div className="section-heading">
-            <p className="eyebrow">From the blog</p>
-            <h2>Reflections on resilience, habits, and wellbeing.</h2>
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">From the blog</p>
+              <h2>Reflections on resilience, habits, and wellbeing.</h2>
+            </div>
+            {posts.length > 0 && (
+              <div className="filter-pills" role="group" aria-label="Filter articles by category">
+                {[{ id: 'all', label: 'All' }, ...blogCategories].map(({ id, label }) => (
+                  <button key={id} className={`pill${category === id ? ' is-active' : ''}`} type="button" aria-pressed={category === id} onClick={() => setCategory(id)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <PostsStatus status={status} count={posts.length} />
-          <div className="card-grid">{featuredPosts.map((post) => <PostCard key={post.slug} post={post} />)}</div>
-        </div>
-      </section>
-
-      <section id="latest" className="section alt-section">
-        <div className="container">
-          <div className="section-heading split-heading">
-            <div><p className="eyebrow">Latest articles</p><h2>Stories and reflections from our community.</h2></div>
-            <div className="filter-pills" aria-label="Categories">
-              {[{ id: 'all', label: 'All' }, ...blogCategories].map(({ id, label }) => (
-                <button key={id} className={`pill${category === id ? ' is-active' : ''}`} type="button" aria-pressed={category === id} onClick={() => setCategory(id)}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
           {status === 'ready' && posts.length > 0 && !visiblePosts.length && (
             <div className="archive-empty"><h3>No posts in this category yet.</h3><p>Try another category.</p></div>
           )}
-          <div className="stack-list">{visiblePosts.map((post) => <PostRow key={post.slug} post={post} />)}</div>
+          <div className="card-grid">{visiblePosts.map((post) => <PostCard key={post.slug} post={post} />)}</div>
         </div>
       </section>
 
@@ -841,10 +939,92 @@ function FlipCard({ tag, title, text }) {
   );
 }
 
-// A photo from club life, with a short caption over its lower corner.
-function ClubPhoto({ src, alt, caption, width, height, wide = false, band = false }) {
+// A percentage drawn as a ring that fills in as it scrolls into view (the fill is styled in styles.css).
+const RING_RADIUS = 52;
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+
+function StatRing({ value, qualifier = '', sign = '', label, tone = 'emerald' }) {
+  const ringStyle = { '--ring-length': `${RING_LENGTH}px`, '--ring-offset': `${RING_LENGTH * (1 - value / 100)}px` };
   return (
-    <figure className={`photo-tile${wide ? ' photo-tile-wide' : ''}${band ? ' photo-tile-band' : ''}`}>
+    <div className={`stat-ring-item is-${tone}`}>
+      <div className="stat-ring" style={ringStyle}>
+        <svg className="stat-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <circle className="stat-ring-track" cx="60" cy="60" r={RING_RADIUS} />
+          <circle className="stat-ring-value" cx="60" cy="60" r={RING_RADIUS} />
+        </svg>
+        <span className="stat-ring-number">
+          {qualifier && <span className="stat-ring-qualifier">{qualifier}</span>}
+          <CountUp value={value} prefix={sign} suffix="%" className="stat-count" />
+        </span>
+      </div>
+      <p className="stat-text">{label}</p>
+    </div>
+  );
+}
+
+// Home page: why mental health support for students matters, in numbers.
+function MentalHealthStats() {
+  return (
+    <section id="home-start" className="section stats-section" aria-labelledby="stats-heading">
+      <div className="container">
+        <div className="section-heading">
+          <p className="eyebrow">Why it matters</p>
+          <h2 id="stats-heading">Mental health can’t wait. <Heartbeat className="stats-heading-icon" size={34} aria-hidden="true" /></h2>
+          <p className="lede">The numbers behind why we do this work.</p>
+        </div>
+
+        <div className="stats-bento">
+          <article className="stat-card stat-card-feature">
+            <span className="stat-glow" aria-hidden="true" />
+            <span className="stat-label stat-label-top"><MapPin size={15} aria-hidden="true" /> In Kenya</span>
+            <p className="stat-big"><span className="stat-big-accent">1</span> in 4</p>
+            <div className="stat-people" aria-hidden="true">
+              {[0, 1, 2, 3].map((person) => (
+                <span key={person} className={`stat-person-wrap${person === 0 ? ' is-highlighted' : ''}`} style={{ '--person': person }}>
+                  <User className="stat-person" size={46} />
+                </span>
+              ))}
+            </div>
+            <p className="stat-text">people seeking outpatient care show symptoms of a mental health condition.</p>
+            <span className="stat-source">Ministry of Health, Kenya</span>
+          </article>
+
+          <article className="stat-card stat-card-gap">
+            <span className="stat-label"><GraduationCap size={15} aria-hidden="true" /> The help gap</span>
+            <div className="stat-rings">
+              <StatRing value={35} label="of university students worldwide experience a mental health condition" />
+              <span className="stat-rings-yet">yet</span>
+              <StatRing value={20} qualifier="less than" label="of them seek professional help" tone="copper" />
+            </div>
+          </article>
+
+          <article className="stat-card stat-card-burden">
+            <span className="stat-label"><GlobeHemisphereEast size={15} aria-hidden="true" /> Worldwide</span>
+            <div className="stat-burden-figure">
+              <CountUp value={13} suffix="%" className="stat-count stat-count-large" />
+              <p className="stat-text">of the total disease burden comes from mental health conditions.</p>
+            </div>
+            <div className="stat-bar" aria-hidden="true"><span className="stat-bar-fill" /></div>
+          </article>
+        </div>
+
+        <div className="stats-footer">
+          <p>That’s why Mind Over Matter exists: to close the gap, one conversation at a time.</p>
+          <a href="/event#programs" className="button button-primary">See how we help <ArrowRight size={17} aria-hidden="true" /></a>
+        </div>
+        <p className="stats-sources">
+          Sources: World Health Organization; Ministry of Health, Kenya. Photo: hospital waiting room, CCBRT Hospital, Tanzania, by{' '}
+          <a className="stats-credit-link" href="https://commons.wikimedia.org/w/index.php?curid=32167769" target="_blank" rel="noopener noreferrer">Australia’s Department of Foreign Affairs and Trade</a>, CC BY 2.0.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// A photo from club life, with a short caption over its lower corner.
+function ClubPhoto({ src, alt, caption, width, height, band = false }) {
+  return (
+    <figure className={`photo-tile${band ? ' photo-tile-band' : ''}`}>
       <img className={`photo-tile-img${band ? ' photo-tile-band-img' : ''}`} src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
@@ -1044,6 +1224,41 @@ function EventCard({ event, isPast = false }) {
   );
 }
 
+// One program on the Events page: photos (or an icon panel) on one side, the details on the other.
+function ProgramRow({ program, number }) {
+  const [mainPhoto, insetPhoto] = program.photos;
+  return (
+    <article className="program-row">
+      <div className="program-media">
+        {mainPhoto ? (
+          <>
+            <img className="program-photo" src={programPhotos[mainPhoto]} alt={program.photoAlt} width="1200" height="900" loading="lazy" decoding="async" />
+            {insetPhoto && <img className="program-photo-inset" src={programPhotos[insetPhoto]} alt="" width="640" height="480" loading="lazy" decoding="async" />}
+          </>
+        ) : (
+          <div className="program-panel" aria-hidden="true">
+            <span className="program-panel-icon"><Icon name={program.icon} size={56} /></span>
+            <span className="program-panel-label">{program.status ?? program.kicker}</span>
+          </div>
+        )}
+      </div>
+      <div className="program-copy">
+        <span className="program-number">{String(number).padStart(2, '0')}</span>
+        <p className="program-kicker"><Icon name={program.icon} size={16} /> {program.kicker}</p>
+        <h3>{program.title}</h3>
+        {program.status && <p className="program-status"><span className="program-status-dot" aria-hidden="true" /> {program.status}</p>}
+        {program.schedule && <p className="program-schedule"><CalendarDots size={15} aria-hidden="true" /> {program.schedule}</p>}
+        <p className="program-text">{program.text}</p>
+        {program.themes && (
+          <ul className="program-themes">
+            {program.themes.map((theme) => <li key={theme.title}><strong>{theme.title}:</strong> {theme.text}</li>)}
+          </ul>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function EventsPage() {
   const { events, status } = useEvents();
   // Events move from "upcoming" to "past" automatically: the split is worked out from today's date on every visit.
@@ -1051,7 +1266,7 @@ function EventsPage() {
   const past = events.filter((event) => !isUpcoming(event)).reverse().slice(0, PAST_EVENTS_SHOWN);
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="Upcoming events first, then everything we offer year-round: professional care, support groups, workshops, and community." />
+      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="Upcoming events first, then everything we offer year-round: trivia nights, ecotherapy, support circles, book clubs, and time with professionals." />
 
       <section className="section">
         <div className="container">
@@ -1082,24 +1297,18 @@ function EventsPage() {
 
       <section id="programs" className="section alt-section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">Programs & services</p><h2>Support that meets students where they are.</h2></div>
-          <div className="program-list">
-            {programs.map((program, index) => (
-              <article className="program-card" key={program.title}>
-                <span className="program-index">{String(index + 1).padStart(2, '0')}</span>
-                <span className="feature-icon"><Icon name={program.icon} size={28} /></span>
-                <div>
-                  <h3>{program.title}</h3>
-                  <p>{program.text}</p>
-                </div>
-              </article>
-            ))}
+          <div className="section-heading">
+            <p className="eyebrow">Programs & services</p>
+            <h2>Support that meets students where they are.</h2>
+            <p className="lede">From trivia nights and walks in nature to book clubs and time with professionals, there’s a way in for everyone.</p>
+          </div>
+          <div className="program-rows">
+            {programs.map((program, index) => <ProgramRow key={program.title} program={program} number={index + 1} />)}
           </div>
         </div>
       </section>
 
-
-      <section className="section alt-section">
+      <section className="section">
         <div className="container">
           <div className="section-heading"><p className="eyebrow">Our impact</p><h2>What changes when students support each other.</h2></div>
           <div className="about-grid">
@@ -1147,7 +1356,7 @@ function AboutPage() {
 
       <section className="section">
         <div className="container">
-          <div className="section-heading"><p className="eyebrow">Core values</p><h2>The principles that guide everything we do.</h2></div>
+          <div className="section-heading"><p className="eyebrow">Core values</p><h2>The principles that guide us.</h2></div>
           <div className="feature-grid feature-grid-3">
             {coreValues.map((value) => <FeatureCard key={value.name} title={value.name} text={value.text} icon={value.icon} />)}
           </div>
@@ -1155,14 +1364,20 @@ function AboutPage() {
       </section>
 
       <section className="section alt-section">
-        <div className="container two-col">
+        <div className="container">
           <div className="section-heading">
             <p className="eyebrow">Our objectives</p>
             <h2>How we measure what matters.</h2>
+            <p className="lede">The targets we’re working towards, and hold ourselves accountable to.</p>
           </div>
-          <ul className="check-list">
-            {objectives.map((item) => <li key={item}>{item}</li>)}
-          </ul>
+          <div className="objectives-grid">
+            {objectives.map((item) => (
+              <article className="stat-card objective-card" key={item.label}>
+                <span className="stat-label"><Icon name={item.icon} size={15} /> Our target</span>
+                <StatRing value={item.value} sign={item.sign} label={item.label} tone={item.tone} />
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1178,7 +1393,7 @@ function AboutPage() {
                   <span className="team-placeholder" aria-hidden="true"><UsersThree size={56} /></span>
                 )}
                 <h3>{person.name ?? 'To be announced'}</h3>
-                <span className="post-tag">{person.role}</span>
+                <span className="post-tag team-role">{person.role}</span>
               </article>
             ))}
           </div>
@@ -1206,7 +1421,7 @@ function AboutPage() {
         <div className="feature-grid feature-grid-3">
           {waysToJoin.map((item) => <FeatureCard key={item.title} {...item} />)}
         </div>
-        <ClubPhoto src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" caption="There’s a seat for you" width="960" height="1280" band />
+        <ClubPhoto src={togetherPhoto} alt="Club members standing arm in arm and smiling on an ecotherapy outing" caption="Come as you are. Leave with friends." width="1600" height="767" band />
         <div className="hero-actions">
           <a href="/contact-us" className="button button-primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></a>
         </div>
@@ -1214,8 +1429,15 @@ function AboutPage() {
 
       <section className="section alt-section"><div className="container">
         <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>Keeping support accessible to everyone.</h2></div>
-        <div className="feature-grid">
-          {funding.map((item, index) => <article className="about-card" key={item.title}><span className="journal-tag">{String(index + 1).padStart(2, '0')}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}
+        <div className="funding-grid">
+          {funding.map((item, index) => (
+            <article className={`about-card${item.link ? ' funding-card-highlight' : ''}`} key={item.title}>
+              <span className="journal-tag">{String(index + 1).padStart(2, '0')}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+              {item.link && <a className="text-link funding-link" href={item.link.href}><ShoppingBag size={16} aria-hidden="true" /> {item.link.label}</a>}
+            </article>
+          ))}
         </div>
       </div></section>
 

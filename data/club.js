@@ -65,44 +65,94 @@ export const logoSymbolism = [
   { name: 'The name', text: '"Mind Over Matter", placed prominently as our guiding principle.' },
 ];
 
+// "Why we exist" on the home page. `icon` is a key in the icons list in pages/main.jsx; `chips` are optional tags.
+// "Why we exist" on the home page. `icon` is a key in the icons list in pages/main.jsx; `chips` are optional tags.
 export const problems = [
-  { title: 'Academic pressure and stress', text: 'Long hours, high stakes, and relentless exams take a real toll on students.' },
-  { title: 'Unhealthy coping mechanisms', text: 'Without better tools, many students turn to habits that make things worse.' },
-  { title: 'Inadequate institutional support', text: 'Mental health support from administration has not kept pace with student need.' },
-  { title: 'Lack of peer support networks', text: 'Too many students struggle alone, without a circle that understands.' },
-  { title: 'Suicide risk and prevention', text: 'Early support and open conversation save lives. Silence does not.' },
+  { title: 'Academic pressure and stress', icon: 'books', text: 'Long hours, high stakes, and relentless exams take a real toll on students.' },
+  { title: 'Unhealthy coping mechanisms', icon: 'pill', text: 'Without better tools, many students turn to habits that make things worse.' },
+  { title: 'Inadequate institutional support', icon: 'buildings', text: 'Mental health support from administration has not kept pace with student need.' },
+  { title: 'Lack of peer support networks', icon: 'users', text: 'Too many students struggle alone, without a circle that understands.' },
+  { title: 'Suicide risk and prevention', icon: 'lifebuoy', text: 'Early support and open conversation save lives. Silence does not.' },
+  {
+    title: 'Barriers to seeking support',
+    icon: 'barricade',
+    text: 'Even when students know help exists, these barriers keep many from reaching out, so awareness alone is not enough.',
+    chips: ['Stigma', 'Doubts that services help', 'Long wait times', 'Reluctance to ask for help'],
+  },
 ];
 
+// Home "Our approach": four connected steps. `keyword` is the short word shown above each title.
 export const approach = [
-  { title: 'Advocacy for mental health', icon: 'megaphone', text: 'Pushing for university policies and practices that promote student mental well-being.' },
-  { title: 'Creation of support groups', icon: 'users', text: 'Close-knit groups and regular meet-ups where students connect with peers facing similar challenges.' },
-  { title: 'Community approach', icon: 'handshake', text: 'Social events, awareness campaigns, and open conversations that build a caring community, so no student faces mental health challenges alone.' },
-  { title: 'Capacity building', icon: 'sprout', text: 'Workshops that build the skills, knowledge, and resources to manage stress, emotions, and mental health challenges constructively.' },
+  { title: 'Advocacy for mental health', keyword: 'Speak up', icon: 'megaphone', text: 'Pushing for university policies and practices that promote student mental well-being.' },
+  { title: 'Creation of support groups', keyword: 'Connect', icon: 'users', text: 'Close-knit groups and regular meet-ups where students connect with peers facing similar challenges.' },
+  { title: 'Community approach', keyword: 'Belong', icon: 'handshake', text: 'Social events, awareness campaigns, and open conversations that build a caring community, so no student faces mental health challenges alone.' },
+  { title: 'Capacity building', keyword: 'Grow', icon: 'sprout', text: 'Workshops that build the skills, knowledge, and resources to manage stress, emotions, and mental health challenges constructively.' },
 ];
 
+// About page "Our objectives": the targets the club measures itself against. `sign: '+'` marks an increase.
 export const objectives = [
-  'Provide a safe and supportive space for students to discuss mental health concerns.',
-  'Raise awareness about mental health issues among students.',
-  'Connect students with trained mental health personnel, wherever they study.',
-  'Promote healthy coping mechanisms and self-care strategies.',
-  'Advocate for policies and practices that support student mental health.',
+  { value: 50, sign: '+', icon: 'firstaid', tone: 'emerald', label: 'increase in students trained in Mental Health First Aid (MHFA)' },
+  { value: 30, sign: '+', icon: 'lifebuoy', tone: 'copper', label: 'increase in students seeking mental health resources' },
+  { value: 80, sign: '', icon: 'message', tone: 'emerald', label: 'of participants reporting more comfort discussing mental health challenges openly' },
 ];
 
+// Programs on the Events page. `photos` are keys in programPhotos (pages/main.jsx): the first is the main photo,
+// a second one is shown as a smaller overlapping photo. Programs without photos show `icon` on a green panel.
 export const programs = [
   {
-    title: 'Access to mental health professionals',
-    icon: 'stethoscope',
-    text: 'Members can access pro-bono services from psychologists, therapists, and psychiatrists, along with curated mental health resources.',
+    title: 'Trivia Thursdays',
+    kicker: 'Interactive wellness & engagement',
+    schedule: 'Monthly, on Thursdays',
+    icon: 'puzzle',
+    photos: ['trivia'],
+    photoAlt: 'Students taking part in an interactive mental health trivia session at Kenyatta University',
+    text: 'Interactive mental health trivia sessions that bring together playful learning, friendly peer competition, and group dialogue. They break down the barriers around talking about mental health and build a safe, supportive community.',
   },
   {
-    title: 'Support groups and workshops',
-    icon: 'users',
-    text: 'Groups for students facing similar challenges, plus workshops on anxiety management, coping skills, and building healthy relationships.',
+    title: 'Ecotherapy',
+    kicker: 'Healing in nature',
+    icon: 'tree',
+    photos: ['ecotherapyForest', 'ecotherapyCave'],
+    photoAlt: 'Club members standing together among green trees on an ecotherapy outing',
+    text: 'By stepping into natural spaces, we encourage young people to disconnect from academic pressure, practise active coping, and strengthen their resilience together.',
   },
   {
-    title: 'Social events',
-    icon: 'party',
-    text: 'Walks, game nights, dinners, and team building that build a real sense of community and belonging.',
+    title: 'Safe Spaces & Community Support Circles',
+    kicker: 'Peer support',
+    icon: 'message',
+    photos: ['safeSpaces'],
+    photoAlt: 'Students sitting around a table, talking openly in a support circle',
+    text: 'A confidential, judgement-free space where students share lived experiences, build emotional resilience, and practise mutual vulnerability.',
+  },
+  {
+    title: 'Basic Mental Health First Aid Training',
+    kicker: 'Skills that help',
+    status: 'Enrollment opening soon',
+    icon: 'firstaid',
+    photos: [],
+    text: 'Practical training that helps students recognise when a peer is struggling, offer first support with care, and guide them towards professional help.',
+  },
+  {
+    title: 'Book Club',
+    kicker: 'Mental health literacy through stories',
+    schedule: 'Twice a month, on Tuesdays',
+    icon: 'book',
+    photos: ['bookClub', 'bookClubLibrary'],
+    photoAlt: 'Book club members holding up the books they are reading',
+    text: 'We promote mental health literacy through narrative engagement, diving into themes such as:',
+    themes: [
+      { title: 'De-stigmatising mood disorders', text: 'Unpacking anxiety, depression, and help-seeking.' },
+      { title: 'Resilience & burnout', text: 'Overcoming academic stress and setting healthy emotional boundaries.' },
+      { title: 'Identity & belonging', text: 'Navigating social pressure, self-worth, and peer connection.' },
+    ],
+  },
+  {
+    title: 'The Mental Health Café',
+    kicker: 'Professional support',
+    schedule: 'In person, plus online sessions & forums',
+    icon: 'coffee',
+    photos: [],
+    text: 'Where we connect young people with mental health professionals, including psychologists and therapists, who offer their time pro bono. We also run online sessions and forums, so you can join from wherever you are.',
   },
 ];
 
@@ -160,4 +210,5 @@ export const funding = [
   { title: 'Grants', text: 'We apply for grants from foundations and organisations that invest in student mental health.' },
   { title: 'Donations', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.' },
   { title: 'Sponsorships', text: 'Businesses and organisations can sponsor our events, workshops, and awareness campaigns.' },
+  { title: 'Buy our merch', text: 'Every hoodie, T-shirt, cap, and bucket hat you buy helps fund our programs.', link: { href: '/merch', label: 'Shop merch' } },
 ];
