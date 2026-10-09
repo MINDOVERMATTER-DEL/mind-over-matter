@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import {
   ArrowClockwise, ArrowLeft, ArrowRight, ArrowsClockwise, ArrowUp, ArrowUpRight, Barricade, Books, Buildings, CalendarDots, CalendarPlus, CalendarStar, ChatsCircle, CheckCircle,
   BookOpen, Clock, Coffee, Compass, Confetti, EnvelopeSimple, FirstAidKit, Eye, FacebookLogo, GraduationCap, HandCoins, HandHeart,
-  GlobeHemisphereEast, Handshake, Heart, Heartbeat, House, IconContext, Lifebuoy, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
+  GlobeHemisphereEast, Handshake, Heart, Heartbeat, House, IconContext, Laptop, Lifebuoy, InstagramLogo, LinkedinLogo, List, LockKey, MapPin, Megaphone, Minus, MoonStars,
   Newspaper, NotePencil, Package, PencilSimple, Phone, Pill, Plant, PuzzlePiece, Plus, Quotes, ShareNetwork, ShoppingBag, SignOut,
   SquaresFour, Stethoscope, Sun, SunHorizon, TiktokLogo, Trash, Tree, Truck, User, UsersThree, WarningCircle, WhatsappLogo, WifiHigh,
   WifiSlash, X, XLogo,
@@ -40,9 +40,6 @@ import ecotherapyCavePhoto from '../assets/images/programs/ecotherapy-cave.webp'
 import safeSpacesPhoto from '../assets/images/programs/safe-spaces.webp';
 import bookClubPhoto from '../assets/images/programs/book-club.webp';
 import bookClubLibraryPhoto from '../assets/images/programs/book-club-library.webp';
-import firstAidPhoto from '../assets/images/programs/first-aid-training.webp';
-import firstAidCprPhoto from '../assets/images/programs/first-aid-cpr.webp';
-import cafePhoto from '../assets/images/programs/mental-health-cafe.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
 import logoFull from '../assets/images/logo/logo-full.webp';
 import articlesPdf from '../documents/MIND OVER MATTER ARTICLES OF ASSOCIATION.pdf?url';
@@ -67,11 +64,13 @@ const icons = {
   books: Books,
   buildings: Buildings,
   coffee: Coffee,
+  eye: Eye,
   firstaid: FirstAidKit,
   graduation: GraduationCap,
   hand: HandHeart,
   handshake: Handshake,
   heart: Heart,
+  laptop: Laptop,
   lifebuoy: Lifebuoy,
   lock: LockKey,
   megaphone: Megaphone,
@@ -93,9 +92,6 @@ const programPhotos = {
   safeSpaces: safeSpacesPhoto,
   bookClub: bookClubPhoto,
   bookClubLibrary: bookClubLibraryPhoto,
-  firstAid: firstAidPhoto,
-  firstAidCpr: firstAidCprPhoto,
-  cafe: cafePhoto,
 };
 
 const teamPhotos = { faith: faithPhoto, reagan: reaganPhoto, rogers: rogersPhoto, krystal: krystalPhoto, james: jamesPhoto };
@@ -1242,9 +1238,26 @@ function ProgramRow({ program, number }) {
             {insetPhoto && <img className="program-photo-inset" src={programPhotos[insetPhoto]} alt="" width="640" height="480" loading="lazy" decoding="async" />}
           </>
         ) : (
-          <div className="program-panel" aria-hidden="true">
-            <span className="program-panel-icon"><Icon name={program.icon} size={56} /></span>
-            <span className="program-panel-label">{program.status ?? program.kicker}</span>
+          <div className="program-panel">
+            <div className="program-panel-head">
+              <span className="program-panel-icon"><Icon name={program.icon} size={30} /></span>
+              <p className="program-panel-heading">{program.panel.heading}</p>
+            </div>
+            <ul className="program-panel-points">
+              {program.panel.points.map((point) => (
+                <li key={point.text}><span className="program-panel-point-icon"><Icon name={point.icon} size={18} /></span>{point.text}</li>
+              ))}
+            </ul>
+            {program.panel.chips && (
+              <ul className="program-panel-chips" aria-label="Who you’ll meet">
+                {program.panel.chips.map((chip) => <li key={chip}>{chip}</li>)}
+              </ul>
+            )}
+            {program.panel.action && (
+              <a className="button button-light program-panel-action" href={program.panel.action.href}>
+                {program.panel.action.label} <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -1311,15 +1324,6 @@ function EventsPage() {
           <div className="program-rows">
             {programs.map((program, index) => <ProgramRow key={program.title} program={program} number={index + 1} />)}
           </div>
-          <p className="stats-sources program-credits">
-            Photo credits: first aid training in the community by{' '}
-            <a className="stats-credit-link" href="https://commons.wikimedia.org/wiki/File:First_Aid_training_in_the_Community.jpg" target="_blank" rel="noopener noreferrer">Justus Odundo</a>
-            {' '}and first aid training in Sagana, Kenya by{' '}
-            <a className="stats-credit-link" href="https://commons.wikimedia.org/wiki/File:Adventure_First_Aid_training,_Sagana,_Kenya_.jpg" target="_blank" rel="noopener noreferrer">Cory H Jones</a>
-            {' '}(both CC BY-SA 4.0, cropped); café in Nairobi by{' '}
-            <a className="stats-credit-link" href="https://www.flickr.com/photos/18288598@N00/4696324652" target="_blank" rel="noopener noreferrer">whiteafrican</a>
-            {' '}(CC BY 2.0).
-          </p>
         </div>
       </section>
 

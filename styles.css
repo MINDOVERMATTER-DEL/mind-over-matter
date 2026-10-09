@@ -2591,16 +2591,16 @@ input {
 
 .program-photo,
 .program-panel {
-  display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
 .program-photo {
+  display: block;
   height: auto;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
 }
 
@@ -2631,39 +2631,98 @@ input {
   scale: 1.04;
 }
 
-/* Programs without photos: a green panel with the program's icon. */
+/* Programs without photos: a green panel with what the program offers, instead of a picture. */
 .program-panel {
   position: relative;
   display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 1rem;
+  align-content: center;
+  gap: 1.25rem;
+  min-height: 20rem;
   overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   background:
-    radial-gradient(circle at 80% 15%, rgb(255 154 82 / 35%), transparent 45%),
-    radial-gradient(circle at 15% 90%, rgb(142 230 196 / 30%), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgb(255 154 82 / 35%), transparent 40%),
+    radial-gradient(circle at 10% 95%, rgb(142 230 196 / 28%), transparent 45%),
     repeating-linear-gradient(132deg, transparent 0 34px, rgb(255 255 255 / 5%) 34px 35px),
     var(--metal-emerald);
   color: #fff;
 }
 
+.program-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .program-panel-icon {
   display: grid;
+  flex-shrink: 0;
   place-items: center;
-  width: 7.5rem;
-  height: 7.5rem;
+  width: 3.75rem;
+  height: 3.75rem;
   border: 1px solid rgb(255 255 255 / 30%);
   border-radius: 50%;
   background: rgb(255 255 255 / 12%);
-  box-shadow: 0 0 0 12px rgb(255 255 255 / 6%);
+  box-shadow: 0 0 0 8px rgb(255 255 255 / 6%);
 }
 
-.program-panel-label {
-  max-width: 16rem;
-  color: rgb(240 250 246 / 90%);
+.program-panel-heading {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  text-align: center;
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+  line-height: 1.15;
+}
+
+.program-panel-points {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.program-panel-points li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 9%);
+  font-size: 0.95rem;
+  backdrop-filter: blur(4px);
+}
+
+.program-panel-point-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 10px;
+  background: rgb(255 154 82 / 25%);
+  color: #ffd2b0;
+}
+
+.program-panel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.program-panel-chips li {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.program-panel-action {
+  justify-self: start;
 }
 
 .program-copy {
@@ -3222,10 +3281,6 @@ input {
   margin: 1.25rem 0 0;
   color: var(--muted);
   font-size: 0.78rem;
-}
-
-.program-credits {
-  margin-top: clamp(2.5rem, 6vw, 4rem);
 }
 
 .stats-credit-link {

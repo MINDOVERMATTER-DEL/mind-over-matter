@@ -97,7 +97,8 @@ export const objectives = [
 ];
 
 // Programs on the Events page. `photos` are keys in programPhotos (pages/main.jsx): the first is the main photo,
-// a second one is shown as a smaller overlapping photo. Programs without photos show `icon` on a green panel.
+// a second one is shown as a smaller overlapping photo. Programs without photos show a green `panel` instead:
+// a heading, a few points (each with an icon key), and optional `chips` and `action` link.
 export const programs = [
   {
     title: 'Trivia Thursdays',
@@ -129,8 +130,16 @@ export const programs = [
     kicker: 'Skills that help',
     status: 'Enrollment opening soon',
     icon: 'firstaid',
-    photos: ['firstAid', 'firstAidCpr'],
-    photoAlt: 'Students in Kenya sitting under a tent during a community first aid training',
+    photos: [],
+    panel: {
+      heading: 'What you’ll learn',
+      points: [
+        { icon: 'eye', text: 'Spot the signs that a peer is struggling' },
+        { icon: 'message', text: 'Start a calm, supportive conversation' },
+        { icon: 'handshake', text: 'Guide them towards professional help' },
+      ],
+      action: { label: 'Register your interest', href: '/contact-us?topic=events' },
+    },
     text: 'Practical training that helps students recognise when a peer is struggling, offer first support with care, and guide them towards professional help.',
   },
   {
@@ -152,8 +161,15 @@ export const programs = [
     kicker: 'Professional support',
     schedule: 'In person, plus online sessions & forums',
     icon: 'coffee',
-    photos: ['cafe'],
-    photoAlt: 'People chatting over coffee at the counter of a café in Nairobi',
+    photos: [],
+    panel: {
+      heading: 'Two ways to join',
+      points: [
+        { icon: 'coffee', text: 'In person: sit down with a professional over coffee' },
+        { icon: 'laptop', text: 'Online: sessions and forums, wherever you are' },
+      ],
+      chips: ['Psychologists', 'Therapists', 'Pro bono'],
+    },
     text: 'Where we connect young people with mental health professionals, including psychologists and therapists, who offer their time pro bono. We also run online sessions and forums, so you can join from wherever you are.',
   },
 ];
