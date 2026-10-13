@@ -45,7 +45,7 @@ SITE_URL=https://your-site-address npm run build
 | `firebase-config.js` | The Firebase project's public web config |
 | `firestore.rules` | Database security rules: paste into the Firebase console when changed |
 | `assets/images/` | All website images (see the README inside) |
-| `documents/` | The Articles of Association and the club presentation |
+| `documents/` | The club presentation |
 | `scripts/` | Small build helpers (icons, share image) |
 
 ## Admin dashboard

@@ -23,7 +23,7 @@ import {
   starterProducts,
 } from '../data/merch.js';
 import {
-  approach, contact, coreValues, funding, impact, logoSymbolism, mission,
+  approach, contact, coreValues, funding, impact, mission,
   objectives, preamble, problems, programs, purpose, quote, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
@@ -41,8 +41,6 @@ import safeSpacesPhoto from '../assets/images/programs/safe-spaces.webp';
 import bookClubPhoto from '../assets/images/programs/book-club.webp';
 import bookClubLibraryPhoto from '../assets/images/programs/book-club-library.webp';
 import logoEmblem from '../assets/images/logo/logo-emblem.webp';
-import logoFull from '../assets/images/logo/logo-full.webp';
-import articlesPdf from '../documents/MIND OVER MATTER ARTICLES OF ASSOCIATION.pdf?url';
 import '@fontsource-variable/dm-sans';
 import '@fontsource-variable/fraunces';
 import 'bootstrap/dist/css/bootstrap-grid.min.css';
@@ -539,7 +537,6 @@ function Footer() {
           <h2>The club</h2>
           <ul>
             <li><a className="footer-link" href="/about-us#get-involved">Get involved</a></li>
-            <li><a className="footer-link" href={articlesPdf} download>Articles of Association (PDF)</a></li>
             <li><a className="footer-link" href="/privacy" aria-current={activeHref === '/privacy' ? 'page' : undefined}>Privacy policy</a></li>
           </ul>
         </div>
@@ -1285,7 +1282,7 @@ function EventsPage() {
   const past = events.filter((event) => !isUpcoming(event)).reverse().slice(0, PAST_EVENTS_SHOWN);
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="Upcoming events first, then everything we offer year-round: trivia nights, ecotherapy, support circles, book clubs, and time with professionals." />
+      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="From trivia nights and forest trails, to book clubs and personalized sessions with our in-house mental health professionals, there’s something for everyone." />
 
       <section className="section">
         <div className="container">
@@ -1319,7 +1316,6 @@ function EventsPage() {
           <div className="section-heading">
             <p className="eyebrow">Programs & services</p>
             <h2>Support that meets students where they are.</h2>
-            <p className="lede">From trivia nights and walks in nature to book clubs and time with professionals, there’s a way in for everyone.</p>
           </div>
           <div className="program-rows">
             {programs.map((program, index) => <ProgramRow key={program.title} program={program} number={index + 1} />)}
@@ -1351,6 +1347,13 @@ function AboutPage() {
       <section className="section section-compact">
         <div className="container">
           <ClubPhoto src={clubGroupPhoto} alt="Mind Over Matter members gathered together in a lecture hall" caption="Our members at a club gathering" width="1280" height="960" band />
+        </div>
+      </section>
+
+      <section className="section section-compact">
+        <div className="container about-intro-copy">
+          <p>Born at Kenyatta University and built for young people across Kenya, Mind Over Matter was founded on a simple truth: no student should navigate mental health challenges alone.</p>
+          <p>Recognizing the distinct pressures of academic life, social transitions, and personal growth, we established a peer-led sanctuary where mental health is openly discussed, actively nurtured, and deeply understood. What began as a grassroots student movement at KU’s main campus is now our launchpad, a replicable model designed to empower university campuses, secondary schools, and local youth communities across the country with compassionate, life-saving support.</p>
         </div>
       </section>
 
@@ -1419,18 +1422,6 @@ function AboutPage() {
         </div>
       </section>
 
-      <section className="section alt-section">
-        <div className="container">
-          <div className="section-heading"><p className="eyebrow">Our logo</p><h2>A symbol of growth and belonging.</h2></div>
-          <figure className="logo-showcase">
-            <img src={logoFull} alt="The Mind Over Matter logo: a head in profile with green leaves, inside a green circle, beneath the words Mind Over Matter" width="301" height="258" loading="lazy" decoding="async" />
-          </figure>
-          <div className="feature-grid">
-            {logoSymbolism.map((item) => <FeatureCard key={item.name} title={item.name} text={item.text} icon="sprout" />)}
-          </div>
-        </div>
-      </section>
-
       <section id="get-involved" className="section"><div className="container">
         <div className="section-heading">
           <p className="eyebrow">Get involved</p>
@@ -1447,7 +1438,7 @@ function AboutPage() {
       </div></section>
 
       <section className="section alt-section"><div className="container">
-        <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>Keeping support accessible to everyone.</h2></div>
+        <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>How you can Support Us.</h2></div>
         <div className="funding-grid">
           {funding.map((item, index) => (
             <article className={`about-card${item.link ? ' funding-card-highlight' : ''}`} key={item.title}>

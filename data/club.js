@@ -1,4 +1,4 @@
-// Club content drawn from the Articles of Association and the Mind Over Matter pitch deck (see documents/).
+// Club content drawn from the Mind Over Matter pitch deck and current club materials.
 
 // Contact details shown in the footer and on the Contact page. Fill these in with the club's real details.
 export const contact = {
@@ -35,7 +35,7 @@ export const purpose =
   'To build a sustainable community where the mental health of all members is valued, protected, and prioritized.';
 
 export const vision =
-  'A world where mental health is prioritized, and everyone has access to the resources and support they need to thrive.';
+  'A resilient generation of young people empowered with the resources, skills, and community support needed for mental wellness.';
 
 export const quote = {
   text: 'What mental health needs is more light, more candor, and more unashamed conversations.',
@@ -56,13 +56,6 @@ export const coreValues = [
   { name: 'Inclusivity', icon: 'handshake', text: 'Welcoming and respecting all individuals, regardless of background, identity, or experience.' },
   { name: 'Advocacy', icon: 'megaphone', text: 'Proactively championing the cause of mental well-being for all students.' },
   { name: 'Growth', icon: 'sprout', text: 'Encouraging personal and collective development in understanding and managing mental health.' },
-];
-
-export const logoSymbolism = [
-  { name: 'The circle', text: 'Community, inclusivity, and the continuous nature of support.' },
-  { name: 'The head', text: 'The people within our community and the individual mind.' },
-  { name: 'The green bud', text: 'Mental health, growth, renewal, and positive well-being.' },
-  { name: 'The name', text: '"Mind Over Matter", placed prominently as our guiding principle.' },
 ];
 
 // "Why we exist" on the home page. `icon` is a key in the icons list in pages/main.jsx; `chips` are optional tags.
@@ -225,8 +218,7 @@ export const waysToJoin = [
 
 export const funding = [
   { title: 'Partnerships', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.' },
-  { title: 'Grants', text: 'We apply for grants from foundations and organisations that invest in student mental health.' },
+  { title: 'Grants and Sponsorships', text: 'We apply for grants from foundations and organisations that invest in student mental health. Businesses and organisations can sponsor our events, workshops, and awareness campaigns.' },
   { title: 'Donations', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.' },
-  { title: 'Sponsorships', text: 'Businesses and organisations can sponsor our events, workshops, and awareness campaigns.' },
   { title: 'Buy our merch', text: 'Every hoodie, T-shirt, cap, and bucket hat you buy helps fund our programs.', link: { href: '/merch', label: 'Shop merch' } },
 ];
