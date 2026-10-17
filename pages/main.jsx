@@ -13,7 +13,8 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { posts as samplePosts } from '../data/posts.js';
 import {
-  blogCategories, categories, categoryLabel, combineProducts, compressCover, compressProductImage, createEvent, createPost, createProduct, describeError, eventTypes, fetchEvents, fetchPosts,
+  blogCategories, categories, categoryLabel, combineProducts, compressCover, compressEventPhoto, compressEventPoster, compressProductImage, createEvent, createPost, createProduct,
+  describeError, eventStorageSize, eventTypes, fetchEvents, fetchPosts, MAX_EVENT_PHOTOS,
   deliveryOptions, fetchMessages, fetchOrders, fetchProducts, importProducts, isFirebaseConfigured, messageTopics, orderStatuses, placeOrder,
   removeEvent, removeMessage, removeOrder, removePost, removeProduct, resetPassword, sendMessage, setMessageRead, setOrderStatus, signIn,
   productStorageSize, signOut, updateEvent, updatePost, updateProduct, watchAdmin,
@@ -23,8 +24,8 @@ import {
   starterProducts,
 } from '../data/merch.js';
 import {
-  approach, contact, coreValues, funding, impact, mission,
-  objectives, preamble, problems, programs, purpose, quote, siteCredit, socialLinks, team, vision, waysToJoin,
+  approach, contact, coreValues, funding, homeImpact, impact, mission,
+  objectives, partnerOptions, problems, programs, purpose, quote, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
 import reaganPhoto from '../assets/images/team/reagan-kirwa.webp';
@@ -62,6 +63,7 @@ const icons = {
   books: Books,
   buildings: Buildings,
   coffee: Coffee,
+  coins: HandCoins,
   eye: Eye,
   firstaid: FirstAidKit,
   graduation: GraduationCap,
@@ -164,6 +166,7 @@ const REVEAL_SELECTOR = [
   '.section-heading', '.feature-card', '.about-card', '.team-card', '.post-card', '.program-card', '.event-card',
   '.list-item', '.problem-list li', '.check-list li', '.quote-band', '.logo-showcase', '.photo-tile', '.flip-card',
   '.stat-card', '.stats-footer', '.why-item', '.why-photo', '.approach-step', '.approach-line',
+  '.impact-milestone', '.impact-wave',
   '.program-media', '.program-copy',
   '.contact-card', '.contact-form-card', '.archive-empty', '.two-col > div:not(.section-heading)',
 ].join(', ');
@@ -888,6 +891,38 @@ function HomePage() {
         </div>
       </section>
 
+      <section className="section partner-cta-section" aria-labelledby="partner-cta-heading">
+        <div className="container">
+          <div className="partner-cta-panel">
+            <div className="partner-cta-icon" aria-hidden="true"><Handshake size={34} /></div>
+            <div className="partner-cta-copy">
+              <p className="eyebrow">For organisations and supporters</p>
+              <h2 id="partner-cta-heading">Help more young people find the support they need.</h2>
+              <p>Partner with us or sponsor our programs, events, and outreach to grow access to mental wellness support across Kenya.</p>
+            </div>
+            <ul className="partner-cta-options">
+              {partnerOptions.map((option) => {
+                const Icon = icons[option.icon];
+                return (
+                  <li className="partner-cta-option" key={option.title}>
+                    <span className="partner-cta-option-icon" aria-hidden="true"><Icon size={22} /></span>
+                    <h3>{option.title}</h3>
+                    <p className="partner-cta-option-text">{option.text}</p>
+                    <a
+                      className="button button-primary button-small"
+                      href={`mailto:${contact.email}?subject=${encodeURIComponent(option.emailSubject)}`}
+                      aria-label={`Start a conversation about ${option.title.toLowerCase()} by email`}
+                    >
+                      <EnvelopeSimple size={16} aria-hidden="true" /> Start a conversation
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section id="featured" className="section">
         <div className="container">
           <div className="section-heading split-heading">
@@ -914,6 +949,7 @@ function HomePage() {
       </section>
 
       <MerchPromo />
+      <HomeImpactSection />
     </PageLayout>
   );
 }
@@ -1208,10 +1244,71 @@ function ArticlePage() {
 
 const PAST_EVENTS_SHOWN = 6;
 
+// Full-screen view of an event's poster and photos, with previous/next. A native <dialog>, so Esc closes it and
+// focus stays inside while it's open.
+function EventLightbox({ title, images, index, onIndexChange, onClose }) {
+  const dialogRef = useRef(null);
+  const open = index !== null;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  const step = (direction) => onIndexChange((index + direction + images.length) % images.length);
+  const image = open ? images[index] : null;
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="event-lightbox"
+      aria-label={`${title}: poster and photos`}
+      onClose={onClose}
+      // A click on the dark backdrop (the dialog itself, not its contents) closes it.
+      onClick={(clickEvent) => { if (clickEvent.target === clickEvent.currentTarget) onClose(); }}
+      onKeyDown={(keyEvent) => {
+        if (images.length < 2) return;
+        if (keyEvent.key === 'ArrowLeft') step(-1);
+        if (keyEvent.key === 'ArrowRight') step(1);
+      }}
+    >
+      {image && (
+        <figure className="event-lightbox-figure">
+          <img className="event-lightbox-image" src={image.src} alt={image.alt} />
+          <figcaption>{image.label}{images.length > 1 ? ` · ${index + 1} of ${images.length}` : ''}</figcaption>
+        </figure>
+      )}
+      <button type="button" className="event-lightbox-close" onClick={onClose} aria-label="Close"><X size={22} aria-hidden="true" /></button>
+      {images.length > 1 && (
+        <>
+          <button type="button" className="event-lightbox-nav is-previous" onClick={() => step(-1)} aria-label="Previous image"><ArrowLeft size={22} aria-hidden="true" /></button>
+          <button type="button" className="event-lightbox-nav is-next" onClick={() => step(1)} aria-label="Next image"><ArrowRight size={22} aria-hidden="true" /></button>
+        </>
+      )}
+    </dialog>
+  );
+}
+
 function EventCard({ event, isPast = false }) {
   const date = parseEventDate(event.date);
+  const [viewing, setViewing] = useState(null);
+  const photos = event.photos ?? [];
+  // Everything the lightbox can show: the poster first, then the photos.
+  const images = [
+    ...(event.poster ? [{ src: event.poster, label: 'Poster', alt: `Poster for ${event.title}` }] : []),
+    ...photos.map((src, index) => ({ src, label: `Photo ${index + 1}`, alt: `Photo ${index + 1} from ${event.title}` })),
+  ];
+  const photoOffset = event.poster ? 1 : 0;
+
   return (
-    <article className={`event-card col-12 col-lg-4${isPast ? ' is-past' : ''}`}>
+    <article className={`event-card col-12 col-lg-4${isPast ? ' is-past' : ''}${event.poster ? ' has-poster' : ''}`}>
+      {event.poster && (
+        <button type="button" className="event-poster" onClick={() => setViewing(0)} aria-label={`View the poster for ${event.title}`}>
+          <img className="event-poster-image" src={event.poster} alt="" loading="lazy" decoding="async" />
+        </button>
+      )}
       <div className="event-date"><strong>{date.getDate()}</strong><span>{monthShort.format(date)}</span>{isPast && <small>{date.getFullYear()}</small>}</div>
       <div className="event-body">
         <span className="post-tag">{isPast ? `Past · ${event.type}` : event.type}</span>
@@ -1219,6 +1316,20 @@ function EventCard({ event, isPast = false }) {
         {event.description && <p>{event.description}</p>}
         <small><CalendarDots size={15} aria-hidden="true" />{eventDetails(event)}</small>
       </div>
+      {photos.length > 0 && (
+        <ul className="event-photos" aria-label={`Photos from ${event.title}`}>
+          {photos.map((src, index) => (
+            <li key={`${index}-${src.slice(-16)}`}>
+              <button type="button" className="event-photo" onClick={() => setViewing(photoOffset + index)} aria-label={`View photo ${index + 1}`}>
+                <img className="event-photo-image" src={src} alt="" loading="lazy" decoding="async" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {images.length > 0 && (
+        <EventLightbox title={event.title} images={images} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />
+      )}
     </article>
   );
 }
@@ -1342,7 +1453,7 @@ function EventsPage() {
 function AboutPage() {
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="About us" title="Built by students, for students." lede={preamble} />
+      <PageHero eyebrow="About us" title="Built by students, for students." />
 
       <section className="section section-compact">
         <div className="container">
@@ -1441,11 +1552,16 @@ function AboutPage() {
         <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>How you can Support Us.</h2></div>
         <div className="funding-grid">
           {funding.map((item, index) => (
-            <article className={`about-card${item.link ? ' funding-card-highlight' : ''}`} key={item.title}>
+            <article className={`about-card${item.link?.href ? ' funding-card-highlight' : ''}`} key={item.title}>
               <span className="journal-tag">{String(index + 1).padStart(2, '0')}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
-              {item.link && <a className="text-link funding-link" href={item.link.href}><ShoppingBag size={16} aria-hidden="true" /> {item.link.label}</a>}
+              {item.link?.emailSubject && contact.email && (
+                <a className="text-link funding-link" href={`mailto:${contact.email}?subject=${encodeURIComponent(item.link.emailSubject)}`}>
+                  <EnvelopeSimple size={16} aria-hidden="true" /> {item.link.label}
+                </a>
+              )}
+              {item.link?.href && <a className="text-link funding-link" href={item.link.href}><ShoppingBag size={16} aria-hidden="true" /> {item.link.label}</a>}
             </article>
           ))}
         </div>
@@ -2277,7 +2393,11 @@ function EventsManager({ editing, onEdit }) {
       <EventDateBadge date={event.date} />
       <div className="dashboard-row-info">
         <strong>{event.title}</strong>
-        <span>{event.type} · {eventLongDate.format(parseEventDate(event.date))} · {eventDetails(event)}</span>
+        <span>
+          {event.type} · {eventLongDate.format(parseEventDate(event.date))} · {eventDetails(event)}
+          {event.poster ? ' · Poster' : ''}
+          {event.photos?.length ? ` · ${event.photos.length} photo${event.photos.length === 1 ? '' : 's'}` : ''}
+        </span>
       </div>
       <div className="dashboard-row-actions">
         <button type="button" className="button button-ghost button-small" onClick={() => onEdit(event)}><PencilSimple size={15} aria-hidden="true" /> Edit</button>
@@ -2316,14 +2436,82 @@ function EventsManager({ editing, onEdit }) {
   );
 }
 
+// Largest an event may be when saved: the database allows 1 MB per event, and the poster and photos are stored in it.
+const MAX_EVENT_SIZE = 950_000;
+
+// Upload, reorder, and remove an event's images (its poster, or its photos). `images` are compressed data URLs.
+function EventImagesField({ images, max, compress, onChange, addLabel, itemLabel }) {
+  const [imageError, setImageError] = useState('');
+  const [adding, setAdding] = useState(false);
+  const inputRef = useRef(null);
+
+  async function handleChange(changeEvent) {
+    const files = Array.from(changeEvent.target.files ?? []).slice(0, max - images.length);
+    setImageError('');
+    setAdding(true);
+    try {
+      const added = [];
+      for (const file of files) added.push(await compress(file));
+      onChange([...images, ...added]);
+    } catch (imageProblem) {
+      setImageError(imageProblem.message);
+    } finally {
+      setAdding(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  }
+
+  function move(index, direction) {
+    const next = [...images];
+    [next[index], next[index + direction]] = [next[index + direction], next[index]];
+    onChange(next);
+  }
+
+  return (
+    <>
+      {images.length > 0 && (
+        <ul className="product-image-list event-image-list">
+          {images.map((src, index) => (
+            <li key={`${index}-${src.slice(-24)}`} className="product-image-item">
+              <img src={src} alt={max > 1 ? `${itemLabel} ${index + 1}` : itemLabel} />
+              <div className="product-image-actions">
+                {max > 1 && (
+                  <>
+                    <button type="button" className="button button-ghost button-small" disabled={index === 0} onClick={() => move(index, -1)} aria-label={`Move ${itemLabel.toLowerCase()} ${index + 1} earlier`}>←</button>
+                    <button type="button" className="button button-ghost button-small" disabled={index === images.length - 1} onClick={() => move(index, 1)} aria-label={`Move ${itemLabel.toLowerCase()} ${index + 1} later`}>→</button>
+                  </>
+                )}
+                <button type="button" className="button button-ghost button-small" onClick={() => onChange(images.filter((_, i) => i !== index))} aria-label={`Remove ${itemLabel.toLowerCase()}${max > 1 ? ` ${index + 1}` : ''}`}>
+                  <Trash size={15} aria-hidden="true" /> Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {images.length < max && (
+        <input ref={inputRef} type="file" accept="image/*" multiple={max > 1} onChange={handleChange} disabled={adding} aria-label={addLabel} />
+      )}
+      {adding && <p className="admin-hint" role="status">Preparing the image…</p>}
+      {imageError && <p className="form-status error" role="alert">{imageError}</p>}
+    </>
+  );
+}
+
 function EventEditor({ event, onCancel, onSaved }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [poster, setPoster] = useState(event?.poster ?? null);
+  const [photos, setPhotos] = useState(event?.photos ?? []);
   const isEditing = Boolean(event);
 
   async function handleSubmit(submitEvent) {
     submitEvent.preventDefault();
-    const values = Object.fromEntries(new FormData(submitEvent.currentTarget));
+    const values = { ...Object.fromEntries(new FormData(submitEvent.currentTarget)), poster, photos };
+    if (eventStorageSize(values) > MAX_EVENT_SIZE) {
+      setError('The poster and photos are too large to save together. Remove a photo or two and try again.');
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -2362,6 +2550,28 @@ function EventEditor({ event, onCancel, onSaved }) {
         <label>Description <span className="admin-hint">Optional. One or two sentences about what to expect.</span>
           <textarea name="description" rows={4} maxLength={600} defaultValue={event?.description ?? ''} />
         </label>
+        <div className="admin-field">
+          <span className="admin-field-label">Poster <span className="admin-hint">Optional. Shown at the top of the event; visitors can open it full size. Large images are resized automatically.</span></span>
+          <EventImagesField
+            images={poster ? [poster] : []}
+            max={1}
+            compress={compressEventPoster}
+            onChange={(next) => setPoster(next[0] ?? null)}
+            addLabel="Upload a poster"
+            itemLabel="Poster"
+          />
+        </div>
+        <div className="admin-field">
+          <span className="admin-field-label">Photos <span className="admin-hint">Optional. Up to {MAX_EVENT_PHOTOS}, e.g. from the day itself. Shown as small pictures under the event.</span></span>
+          <EventImagesField
+            images={photos}
+            max={MAX_EVENT_PHOTOS}
+            compress={compressEventPhoto}
+            onChange={setPhotos}
+            addLabel="Add photos"
+            itemLabel="Photo"
+          />
+        </div>
         <div className="dashboard-form-actions">
           <button type="submit" className="button button-primary" disabled={busy}>
             {busy ? 'Saving…' : isEditing ? 'Save changes' : 'Add event'}
@@ -3526,6 +3736,66 @@ function MerchPromo() {
               </a>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// The wave joining the impact milestones, in a 1000×100 box stretched over the row of icons. Icons alternate
+// high and low (see .impact-node in styles.css), and the wave curves through each one.
+const WAVE_HIGH = 34.6;
+const WAVE_LOW = 65.4;
+
+function impactWavePath(count) {
+  const points = Array.from({ length: count }, (_, index) => [((index + 0.5) / count) * 1000, index % 2 ? WAVE_LOW : WAVE_HIGH]);
+  return points.reduce((path, [x, y], index) => {
+    if (index === 0) return `M ${x} ${y}`;
+    const [previousX, previousY] = points[index - 1];
+    const handle = (x - previousX) / 2;
+    return `${path} C ${previousX + handle} ${previousY} ${x - handle} ${y} ${x} ${y}`;
+  }, '');
+}
+
+// Home "Our impact": the milestones as numbered steps joined by a wave, in the same style as "Our approach".
+function HomeImpactSection() {
+  const { milestones } = homeImpact;
+  return (
+    <section className="section home-impact" aria-labelledby="home-impact-title">
+      <div className="container">
+        <div className="section-heading">
+          <p className="eyebrow">Our impact</p>
+          <h2 id="home-impact-title">What we’ve achieved together.</h2>
+          <p className="lede">{homeImpact.intro}</p>
+        </div>
+
+        <div className="impact-track" style={{ '--milestone-count': milestones.length }}>
+          {/* The wave joining the milestones draws itself in when it scrolls into view. */}
+          <svg className="impact-wave" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="impact-wave-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0">
+                <stop offset="0" stopColor="var(--nav-green)" />
+                <stop offset="1" stopColor="var(--accent)" />
+              </linearGradient>
+            </defs>
+            <path className="impact-wave-path" d={impactWavePath(milestones.length)} pathLength="1" />
+          </svg>
+          <ol className="impact-milestones">
+            {milestones.map((milestone, index) => (
+              <li key={milestone.statistic} className="impact-milestone">
+                <span className="impact-node"><Icon name={milestone.icon} size={28} /></span>
+                <div className="impact-card">
+                  <span className="impact-index">{String(index + 1).padStart(2, '0')}</span>
+                  <strong className="impact-statistic">{milestone.statistic}</strong>
+                  <p className="impact-text">{milestone.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div className="approach-actions">
+          <a className="button button-primary" href={homeImpact.actionHref}>{homeImpact.actionLabel} <ArrowRight size={17} aria-hidden="true" /></a>
         </div>
       </div>
     </section>

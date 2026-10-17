@@ -30,8 +30,12 @@ service cloud.firestore {
         && (post.coverImage == null || (post.coverImage is string && post.coverImage.matches('data:image/jpeg;base64,.*')));
     }
 
+    // `poster` (optional) is one compressed JPEG; `photos` (optional) is a list of up to 3. Both are stored inside
+    // the event, as blog covers are.
     function isValidEvent(event) {
-      return event.keys().hasOnly(['title', 'type', 'description', 'date', 'time', 'venue', 'createdAt', 'updatedAt'])
+      return event.keys().hasOnly(['title', 'type', 'description', 'date', 'time', 'venue', 'poster', 'photos', 'createdAt', 'updatedAt'])
+        && (!('poster' in event) || event.poster == null || (event.poster is string && event.poster.matches('data:image/jpeg;base64,.*')))
+        && (!('photos' in event) || (event.photos is list && event.photos.size() <= 3))
         && event.title is string && event.title.size() > 0 && event.title.size() <= 120
         && event.type in ['Workshop', 'Support group', 'Social', 'Talk', 'Awareness', 'Other']
         && event.description is string && event.description.size() <= 600

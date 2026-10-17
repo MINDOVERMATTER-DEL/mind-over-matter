@@ -28,9 +28,6 @@ export const siteCredit = {
   linkedin: 'https://www.linkedin.com/in/vincent-murithi-4a4261266',
 };
 
-export const preamble =
-  'We, students across Kenya, recognizing the unique pressures and challenges of our academic and personal lives, and believing in the fundamental importance of mental well-being, do hereby establish "Mind Over Matter." Our purpose is to build a compassionate and supportive community where mental health matters, is openly discussed, and actively nurtured.';
-
 export const purpose =
   'To build a sustainable community where the mental health of all members is valued, protected, and prioritized.';
 
@@ -173,6 +170,19 @@ export const impact = [
   { title: 'Empowered individuals', text: 'Participants gaining tools and resources to manage their mental health, build resilience, and thrive.' },
 ];
 
+// Homepage impact timeline. Replace the bracketed placeholders when final copy and remaining measures are ready.
+export const homeImpact = {
+  intro: '[Add introductory copy about the impact of Mind Over Matter.]',
+  actionLabel: 'Get involved',
+  actionHref: '/about-us#get-involved',
+  milestones: [
+    { statistic: '750+', description: 'annual student engagements through our various programs and services', icon: 'users' },
+    { statistic: '10+', description: 'therapy sessions offered to youth in need', icon: 'stethoscope' },
+    { statistic: '80%', description: 'of members report improved well-being after attending an activity', icon: 'heart' },
+    { statistic: '90%', description: 'of participants report feeling safe sharing in support circles', icon: 'message' },
+  ],
+};
+
 // The committee on the About page, in the order shown. A member with `name: null` shows as "To be announced"
 // with a placeholder portrait; fill in their name and photo key once the role is filled. Photo keys map to
 // images in pages/main.jsx (teamPhotos).
@@ -216,9 +226,20 @@ export const waysToJoin = [
   { title: 'Spread the word', icon: 'share', text: 'Tell your classmates, friends, and family about us. One conversation can change someone’s semester.' },
 ];
 
+// Subject lines filled in when someone clicks "Start a conversation" (home page and About us).
+const partnershipSubject = 'Partnering with Mind Over Matter';
+const sponsorshipSubject = 'Sponsoring Mind Over Matter';
+
+// The two options on the home page's partner panel.
+export const partnerOptions = [
+  { title: 'Partnerships', icon: 'handshake', text: 'Mental health organisations, professionals, and NGOs: co-host workshops, support groups, and awareness campaigns with us.', emailSubject: partnershipSubject },
+  { title: 'Grants and Sponsorships', icon: 'coins', text: 'Businesses and foundations: sponsor an event, a workshop series, or an outreach campaign that reaches students across Kenya.', emailSubject: sponsorshipSubject },
+];
+
 export const funding = [
-  { title: 'Partnerships', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.' },
-  { title: 'Grants and Sponsorships', text: 'We apply for grants from foundations and organisations that invest in student mental health. Businesses and organisations can sponsor our events, workshops, and awareness campaigns.' },
+  // `emailSubject` turns the link into an email to the club with that subject line filled in.
+  { title: 'Partnerships', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.', link: { emailSubject: partnershipSubject, label: 'Start a conversation' } },
+  { title: 'Grants and Sponsorships', text: 'We apply for grants from foundations and organisations that invest in student mental health. Businesses and organisations can sponsor our events, workshops, and awareness campaigns.', link: { emailSubject: sponsorshipSubject, label: 'Start a conversation' } },
   { title: 'Donations', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.' },
   { title: 'Buy our merch', text: 'Every hoodie, T-shirt, cap, and bucket hat you buy helps fund our programs.', link: { href: '/merch', label: 'Shop merch' } },
 ];

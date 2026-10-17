@@ -125,6 +125,22 @@ export async function removePost(id) {
 // Dates are stored as "YYYY-MM-DD" and times as "HH:MM" (or ""), so they sort correctly as text and never shift
 // between time zones.
 
+// An event can have a poster and a few photos (e.g. from the day itself). Like blog covers, they are compressed
+// JPEGs stored inside the event, so together they must stay under Firestore's 1 MiB per document.
+export const MAX_EVENT_PHOTOS = 3;
+const EVENT_POSTER_MAX_WIDTH = 1080;
+const EVENT_POSTER_MAX_CHARS = 350_000;
+const EVENT_PHOTO_MAX_WIDTH = 1000;
+const EVENT_PHOTO_MAX_CHARS = 170_000;
+
+export function compressEventPoster(file) {
+  return compressCover(file, { maxWidth: EVENT_POSTER_MAX_WIDTH, maxChars: EVENT_POSTER_MAX_CHARS });
+}
+
+export function compressEventPhoto(file) {
+  return compressCover(file, { maxWidth: EVENT_PHOTO_MAX_WIDTH, maxChars: EVENT_PHOTO_MAX_CHARS });
+}
+
 function toEvent(id, data) {
   return {
     id,
@@ -134,10 +150,12 @@ function toEvent(id, data) {
     date: data.date,
     time: data.time || '',
     venue: data.venue || '',
+    poster: data.poster || null,
+    photos: data.photos ?? [],
   };
 }
 
-function cleanEvent({ title, type, description, date, time, venue }) {
+function cleanEvent({ title, type, description, date, time, venue, poster, photos = [] }) {
   return {
     title: title.trim(),
     type,
@@ -145,7 +163,14 @@ function cleanEvent({ title, type, description, date, time, venue }) {
     date,
     time: time || '',
     venue: venue.trim(),
+    poster: poster || null,
+    photos: photos.slice(0, MAX_EVENT_PHOTOS),
   };
+}
+
+// Rough size of an event as stored, to warn before it passes the database's 1 MB limit per event.
+export function eventStorageSize(fields) {
+  return JSON.stringify(cleanEvent(fields)).length;
 }
 
 export async function fetchEvents() {
