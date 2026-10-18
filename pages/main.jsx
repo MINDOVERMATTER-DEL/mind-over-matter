@@ -3852,7 +3852,7 @@ function HomeImpactSection() {
         <div className="section-heading">
           <p className="eyebrow">Our impact</p>
           <h2 id="home-impact-title">What we’ve achieved together.</h2>
-          <p className="lede">{homeImpact.intro}</p>
+          {homeImpact.intro && <p className="lede">{homeImpact.intro}</p>}
         </div>
 
         <div className="impact-track" style={{ '--milestone-count': milestones.length }}>

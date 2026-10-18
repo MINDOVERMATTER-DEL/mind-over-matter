@@ -16,8 +16,8 @@ export const contact = {
 export const socialLinks = [
   { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/mind_over_matter.med/' },
   { name: 'X (Twitter)', icon: 'x', url: '' },
-  { name: 'TikTok', icon: 'tiktok', url: '' },
-  { name: 'Facebook', icon: 'facebook', url: '' },
+  { name: 'TikTok', icon: 'tiktok', url: 'https://www.tiktok.com/@mind_over_matter.med' },
+  { name: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/share/1D3F9DMeMu/' },
   { name: 'LinkedIn', icon: 'linkedin', url: 'https://www.linkedin.com/in/mind-over-matter-ku-5633453ab' },
   { name: 'WhatsApp', icon: 'whatsapp', url: '' },
 ];
@@ -180,9 +180,9 @@ export const impact = [
   { title: 'Empowered individuals', text: 'Participants gaining tools and resources to manage their mental health, build resilience, and thrive.' },
 ];
 
-// Homepage impact timeline. Replace the bracketed placeholders when final copy and remaining measures are ready.
+// Homepage impact timeline. `intro` is an optional line under the heading; it's hidden while empty.
 export const homeImpact = {
-  intro: '[Add introductory copy about the impact of Mind Over Matter.]',
+  intro: '',
   actionLabel: 'Get involved',
   actionHref: '/about-us#get-involved',
   milestones: [
