@@ -58,6 +58,7 @@ const siteLinks = [
 
 
 const icons = {
+  bag: ShoppingBag,
   barricade: Barricade,
   book: BookOpen,
   books: Books,
@@ -1292,6 +1293,16 @@ function EventLightbox({ title, images, index, onIndexChange, onClose }) {
   );
 }
 
+// The large faint icon on an event card without a poster, by event type (see eventTypes in data/blog.js).
+const eventTypeIcons = {
+  Workshop: 'puzzle',
+  'Support group': 'users',
+  Social: 'party',
+  Talk: 'message',
+  Awareness: 'megaphone',
+  Other: 'heart',
+};
+
 function EventCard({ event, isPast = false }) {
   const date = parseEventDate(event.date);
   const [viewing, setViewing] = useState(null);
@@ -1304,30 +1315,48 @@ function EventCard({ event, isPast = false }) {
   const photoOffset = event.poster ? 1 : 0;
 
   return (
-    <article className={`event-card col-12 col-lg-4${isPast ? ' is-past' : ''}${event.poster ? ' has-poster' : ''}`}>
-      {event.poster && (
-        <button type="button" className="event-poster" onClick={() => setViewing(0)} aria-label={`View the poster for ${event.title}`}>
-          <img className="event-poster-image" src={event.poster} alt="" loading="lazy" decoding="async" />
-        </button>
-      )}
-      <div className="event-date"><strong>{date.getDate()}</strong><span>{monthShort.format(date)}</span>{isPast && <small>{date.getFullYear()}</small>}</div>
-      <div className="event-body">
-        <span className="post-tag">{isPast ? `Past · ${event.type}` : event.type}</span>
-        <h3 className="event-title">{event.title}</h3>
-        {event.description && <p>{event.description}</p>}
-        <small><CalendarDots size={15} aria-hidden="true" />{eventDetails(event)}</small>
+    <article className={`event-card${isPast ? ' is-past' : ''}`}>
+      <div className="event-media">
+        {event.poster ? (
+          <button type="button" className="event-poster" onClick={() => setViewing(0)} aria-label={`View the poster for ${event.title}`}>
+            <img className="event-poster-image" src={event.poster} alt="" loading="lazy" decoding="async" />
+          </button>
+        ) : (
+          <div className="event-banner" aria-hidden="true"><Icon name={eventTypeIcons[event.type] ?? 'heart'} size={96} /></div>
+        )}
+        <div className="event-date-badge">
+          <span className="event-date-month">{monthShort.format(date)}</span>
+          <strong className="event-date-day">{date.getDate()}</strong>
+          {isPast && <span className="event-date-year">{date.getFullYear()}</span>}
+        </div>
       </div>
-      {photos.length > 0 && (
-        <ul className="event-photos" aria-label={`Photos from ${event.title}`}>
-          {photos.map((src, index) => (
-            <li key={`${index}-${src.slice(-16)}`}>
-              <button type="button" className="event-photo" onClick={() => setViewing(photoOffset + index)} aria-label={`View photo ${index + 1}`}>
-                <img className="event-photo-image" src={src} alt="" loading="lazy" decoding="async" />
-              </button>
-            </li>
-          ))}
+
+      <div className="event-body">
+        <div className="event-tags">
+          <span className="post-tag">{event.type}</span>
+          {isPast
+            ? <span className="event-status">Past event</span>
+            : <span className="event-status is-upcoming"><span className="event-status-dot" aria-hidden="true" /> Upcoming</span>}
+        </div>
+        <h3 className="event-title">{event.title}</h3>
+        {event.description && <p className="event-description">{event.description}</p>}
+        <ul className="event-meta">
+          <li><CalendarDots className="event-meta-icon" size={16} aria-hidden="true" /> {eventLongDate.format(date)}</li>
+          {event.time && <li><Clock className="event-meta-icon" size={16} aria-hidden="true" /> {formatEventTime(event.time)}</li>}
+          <li><MapPin className="event-meta-icon" size={16} aria-hidden="true" /> {event.venue || 'Venue to be confirmed'}</li>
         </ul>
-      )}
+        {photos.length > 0 && (
+          <ul className="event-photos" aria-label={`Photos from ${event.title}`}>
+            {photos.map((src, index) => (
+              <li key={`${index}-${src.slice(-16)}`}>
+                <button type="button" className="event-photo" onClick={() => setViewing(photoOffset + index)} aria-label={`View photo ${index + 1}`}>
+                  <img className="event-photo-image" src={src} alt="" loading="lazy" decoding="async" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {images.length > 0 && (
         <EventLightbox title={event.title} images={images} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />
       )}
@@ -1407,16 +1436,18 @@ function EventsPage() {
             <div className="archive-empty"><h3>No upcoming events just now.</h3><p>New events are announced here and on our social media. Check back soon.</p></div>
           )}
         </div>
-        <div className="container row g-4 event-grid">
-          {upcoming.map((event) => <EventCard key={event.id} event={event} />)}
-        </div>
+        {upcoming.length > 0 && (
+          <div className="container event-grid">
+            {upcoming.map((event) => <EventCard key={event.id} event={event} />)}
+          </div>
+        )}
 
         {past.length > 0 && (
           <>
             <div className="container past-events-heading">
               <div className="section-heading"><p className="eyebrow">Past events</p><h2>A look back at recent gatherings.</h2></div>
             </div>
-            <div className="container row g-4 event-grid">
+            <div className="container event-grid">
               {past.map((event) => <EventCard key={event.id} event={event} isPast />)}
             </div>
           </>
@@ -1553,16 +1584,23 @@ function AboutPage() {
         <div className="section-heading"><p className="eyebrow">Funding & support</p><h2>How you can Support Us.</h2></div>
         <div className="funding-grid">
           {funding.map((item, index) => (
-            <article className={`about-card${item.link?.href ? ' funding-card-highlight' : ''}`} key={item.title}>
-              <span className="journal-tag">{String(index + 1).padStart(2, '0')}</span>
+            <article className={`about-card funding-card${item.link?.href ? ' funding-card-highlight' : ''}`} key={item.title}>
+              <div className="funding-card-top">
+                <span className="funding-card-icon"><Icon name={item.icon} size={24} /></span>
+                <span className="funding-card-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              </div>
               <h3>{item.title}</h3>
-              <p>{item.text}</p>
+              <p className="funding-card-text">{item.text}</p>
               {item.link?.emailSubject && contact.email && (
-                <a className="text-link funding-link" href={`mailto:${contact.email}?subject=${encodeURIComponent(item.link.emailSubject)}`}>
+                <a className="button button-ghost button-small funding-link" href={`mailto:${contact.email}?subject=${encodeURIComponent(item.link.emailSubject)}`}>
                   <EnvelopeSimple size={16} aria-hidden="true" /> {item.link.label}
                 </a>
               )}
-              {item.link?.href && <a className="text-link funding-link" href={item.link.href}><ShoppingBag size={16} aria-hidden="true" /> {item.link.label}</a>}
+              {item.link?.href && (
+                <a className="button button-primary button-small funding-link" href={item.link.href}>
+                  <ShoppingBag size={16} aria-hidden="true" /> {item.link.label}
+                </a>
+              )}
             </article>
           ))}
         </div>

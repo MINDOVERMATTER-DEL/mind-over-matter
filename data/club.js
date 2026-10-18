@@ -14,11 +14,11 @@ export const contact = {
 // Social media profiles. Paste the full profile link into `url`. Entries with an empty `url` are hidden on the
 // live site (the dev preview shows them faded, so the layout can be checked before the links exist).
 export const socialLinks = [
-  { name: 'Instagram', icon: 'instagram', url: '' },
+  { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/mind_over_matter.med/' },
   { name: 'X (Twitter)', icon: 'x', url: '' },
   { name: 'TikTok', icon: 'tiktok', url: '' },
   { name: 'Facebook', icon: 'facebook', url: '' },
-  { name: 'LinkedIn', icon: 'linkedin', url: '' },
+  { name: 'LinkedIn', icon: 'linkedin', url: 'https://www.linkedin.com/in/mind-over-matter-ku-5633453ab' },
   { name: 'WhatsApp', icon: 'whatsapp', url: '' },
 ];
 
@@ -248,8 +248,8 @@ export const partnerOptions = [
 
 export const funding = [
   // `emailSubject` turns the link into an email to the club with that subject line filled in.
-  { title: 'Partnerships', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.', link: { emailSubject: partnershipSubject, label: 'Start a conversation' } },
-  { title: 'Grants and Sponsorships', text: 'We apply for grants from foundations and organisations that invest in student mental health. Businesses and organisations can sponsor our events, workshops, and awareness campaigns.', link: { emailSubject: sponsorshipSubject, label: 'Start a conversation' } },
-  { title: 'Donations', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.' },
-  { title: 'Buy our merch', text: 'Every hoodie, T-shirt, cap, and bucket hat you buy helps fund our programs.', link: { href: '/merch', label: 'Shop merch' } },
+  { title: 'Partnerships', icon: 'handshake', text: 'We collaborate with mental health organisations and professionals to deliver services and raise awareness.', link: { emailSubject: partnershipSubject, label: 'Start a conversation' } },
+  { title: 'Grants and Sponsorships', icon: 'coins', text: 'We apply for grants from foundations and organisations that invest in student mental health. Businesses and organisations can sponsor our events, workshops, and awareness campaigns.', link: { emailSubject: sponsorshipSubject, label: 'Start a conversation' } },
+  { title: 'Donations', icon: 'hand', text: 'Gifts from individuals, alumni, and well-wishers help us reach more students. Email us to find out how to give.', link: { emailSubject: 'Donating to Mind Over Matter', label: 'Start a conversation' } },
+  { title: 'Buy our merch', icon: 'bag', text: 'Every hoodie, T-shirt, cap, and bucket hat you buy helps fund our programs.', link: { href: '/merch', label: 'Shop merch' } },
 ];
