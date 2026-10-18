@@ -25,7 +25,7 @@ import {
 } from '../data/merch.js';
 import {
   approach, contact, coreValues, funding, homeImpact, impact, mission,
-  objectives, partnerOptions, problems, programs, purpose, quote, siteCredit, socialLinks, team, vision, waysToJoin,
+  objectives, partnerOptions, problems, programs, purpose, quote, reviewInvite, reviews, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
 import reaganPhoto from '../assets/images/team/reagan-kirwa.webp';
@@ -834,7 +834,7 @@ function HomePage() {
             <div className="section-heading why-heading">
               <p className="eyebrow">Why we exist</p>
               <h2>Student life carries pressures nobody should carry alone.</h2>
-              <p className="lede">We started Mind Over Matter because we saw what our classmates were facing, and how little support there was.</p>
+              <p className="lede">We started Mind Over Matter because we saw the challenges our classmates were facing, and how little support there was.</p>
             </div>
             <figure className="why-photo">
               <img className="why-photo-img" src={supportSessionPhoto} alt="Students seated around a table, smiling and talking during a club session" width="960" height="1280" loading="lazy" decoding="async" />
@@ -950,6 +950,7 @@ function HomePage() {
 
       <MerchPromo />
       <HomeImpactSection />
+      <HomeReviewsSection />
     </PageLayout>
   );
 }
@@ -3737,6 +3738,53 @@ function MerchPromo() {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// Reviews from members, volunteers, and partners (data/club.js). Until there are any, it invites visitors to share
+// their experience by email instead.
+function HomeReviewsSection() {
+  const shareHref = `mailto:${contact.email}?subject=${encodeURIComponent(reviewInvite.emailSubject)}`;
+  return (
+    <section className="section alt-section reviews-section" aria-labelledby="reviews-heading">
+      <div className="container">
+        <div className="section-heading">
+          <p className="eyebrow">Reviews</p>
+          <h2 id="reviews-heading">In their words.</h2>
+          <p className="lede">What members, volunteers, and partners say about being part of Mind Over Matter.</p>
+        </div>
+
+        {reviews.length > 0 ? (
+          <>
+            <ul className="reviews-grid">
+              {reviews.map((review) => (
+                <li className="review-card" key={review.quote}>
+                  <Quotes className="review-card-mark" size={30} aria-hidden="true" />
+                  <blockquote className="review-card-quote">{review.quote}</blockquote>
+                  <p className="review-card-author">
+                    <strong className="review-card-name">{review.name || 'Anonymous member'}</strong>
+                    {review.role && <span className="review-card-role">{review.role}</span>}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <div className="approach-actions">
+              <a className="button button-ghost" href={shareHref}><EnvelopeSimple size={17} aria-hidden="true" /> Share your experience</a>
+            </div>
+          </>
+        ) : (
+          <div className="reviews-empty">
+            <span className="reviews-empty-icon" aria-hidden="true"><Quotes size={34} /></span>
+            <div className="reviews-empty-copy">
+              <h3 className="reviews-empty-title">Your story could be the first one here.</h3>
+              <p className="reviews-empty-text">We’re gathering reflections from the students, volunteers, and partners who make this community. If Mind Over Matter has made a difference for you, we’d love to hear about it.</p>
+              <p className="reviews-empty-note">We only share a review with your permission, and you can choose to stay anonymous.</p>
+            </div>
+            <a className="button button-primary" href={shareHref}><EnvelopeSimple size={17} aria-hidden="true" /> Share your experience</a>
+          </div>
+        )}
       </div>
     </section>
   );

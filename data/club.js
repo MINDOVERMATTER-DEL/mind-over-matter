@@ -22,6 +22,16 @@ export const socialLinks = [
   { name: 'WhatsApp', icon: 'whatsapp', url: '' },
 ];
 
+// Reviews on the home page, from members, volunteers, and partners. Only add one with the person's permission.
+// While the list is empty, the home page invites visitors to share their experience instead.
+// Format: { quote: 'What they said.', name: 'First name', role: 'Member, Kenyatta University' }
+// Leave `name` empty to show the review as anonymous; `role` is optional.
+export const reviews = [];
+
+export const reviewInvite = {
+  emailSubject: 'My experience with Mind Over Matter',
+};
+
 // Website credit in the footer. Paste the designer's full LinkedIn profile link into `linkedin`.
 export const siteCredit = {
   name: 'Vincent Murithi',
