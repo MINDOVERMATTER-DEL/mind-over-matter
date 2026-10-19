@@ -479,6 +479,15 @@ function Header() {
   );
 }
 
+// Email links open a new Gmail message in a new tab, with the address (and subject, if given) filled in.
+// Spread `newTab` onto the link with the href.
+function gmailHref(to, subject = '') {
+  const su = subject ? `&su=${encodeURIComponent(subject)}` : '';
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}${su}`;
+}
+
+const newTab = { target: '_blank', rel: 'noopener noreferrer' };
+
 const socialIcons = {
   instagram: InstagramLogo,
   x: XLogo,
@@ -550,7 +559,7 @@ function Footer() {
           <ul>
             <li>
               <EnvelopeSimple className="footer-icon" size={17} aria-hidden="true" />
-              <a className="footer-link" href={`mailto:${contact.email}`}>{contact.email}</a>
+              <a className="footer-link" href={gmailHref(contact.email)} {...newTab}>{contact.email}</a>
             </li>
             {contact.phone && (
               <li>
@@ -911,7 +920,8 @@ function HomePage() {
                     <p className="partner-cta-option-text">{option.text}</p>
                     <a
                       className="button button-primary button-small"
-                      href={`mailto:${contact.email}?subject=${encodeURIComponent(option.emailSubject)}`}
+                      href={gmailHref(contact.email, option.emailSubject)}
+                      {...newTab}
                       aria-label={`Start a conversation about ${option.title.toLowerCase()} by email`}
                     >
                       <EnvelopeSimple size={16} aria-hidden="true" /> Start a conversation
@@ -1075,7 +1085,7 @@ function FeatureCard({ title, text, icon, emailLink = false }) {
       <h3>{title}</h3>
       <p>{text}</p>
       {emailLink && (
-        <a className="text-link feature-card-link" href={`mailto:${contact.email}?subject=${encodeURIComponent('Donating to Mind Over Matter')}`}>
+        <a className="text-link feature-card-link" href={gmailHref(contact.email, 'Donating to Mind Over Matter')} {...newTab}>
           <EnvelopeSimple size={16} aria-hidden="true" /> {contact.email}
         </a>
       )}
@@ -1592,7 +1602,7 @@ function AboutPage() {
               <h3>{item.title}</h3>
               <p className="funding-card-text">{item.text}</p>
               {item.link?.emailSubject && contact.email && (
-                <a className="button button-ghost button-small funding-link" href={`mailto:${contact.email}?subject=${encodeURIComponent(item.link.emailSubject)}`}>
+                <a className="button button-ghost button-small funding-link" href={gmailHref(contact.email, item.link.emailSubject)} {...newTab}>
                   <EnvelopeSimple size={16} aria-hidden="true" /> {item.link.label}
                 </a>
               )}
@@ -1660,7 +1670,7 @@ function ContactPage() {
       <PageHero eyebrow="Contact us" title="We’re here to listen, connect, and collaborate." lede="Reach out with a question, ask about membership or events, propose a partnership, or simply say hello. Every message is treated in confidence." />
       <section className="section"><div className="container contact-grid">
         <article className="contact-card"><span className="journal-tag">Get in touch</span><h3>Talk to us.</h3><p>Students can reach out about support groups, events, or membership. Partners, NGOs, and mental health professionals: we would love to work with you.</p><ul className="contact-list">
-          <li><EnvelopeSimple className="contact-list-icon" size={17} aria-hidden="true" /><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
+          <li><EnvelopeSimple className="contact-list-icon" size={17} aria-hidden="true" /><a href={gmailHref(contact.email)} {...newTab}>{contact.email}</a></li>
           {contact.phone && <li><Phone className="contact-list-icon" size={17} aria-hidden="true" /><a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`}>{contact.phone}</a></li>}
           <li><MapPin className="contact-list-icon" size={17} aria-hidden="true" /><span>Based in {contact.location.city}, open to students across the country</span></li>
         </ul></article>
@@ -3063,7 +3073,7 @@ function OrdersManager({ orders, status, refresh }) {
   }
 
   const itemCount = (order) => order.items.reduce((sum, item) => sum + item.quantity, 0);
-  const subject = (order) => encodeURIComponent(`Your Mind Over Matter order ${order.reference}`);
+  const subject = (order) => `Your Mind Over Matter order ${order.reference}`;
 
   return (
     <section className="dashboard-card" aria-labelledby="orders-heading">
@@ -3129,9 +3139,9 @@ function OrdersManager({ orders, status, refresh }) {
                 <div className="order-contact">
                   <a className="button button-primary button-small" href={`tel:${selected.phone.replace(/[^\d+]/g, '')}`}><Phone size={15} aria-hidden="true" /> Call {selected.phone}</a>
                   <a className="button button-ghost button-small" href={`https://wa.me/${whatsAppNumber(selected.phone)}`} target="_blank" rel="noopener noreferrer"><WhatsappLogo size={15} aria-hidden="true" /> WhatsApp</a>
-                  <a className="button button-ghost button-small" href={`mailto:${selected.email}?subject=${subject(selected)}`}><EnvelopeSimple size={15} aria-hidden="true" /> Email</a>
+                  <a className="button button-ghost button-small" href={gmailHref(selected.email, subject(selected))} {...newTab}><EnvelopeSimple size={15} aria-hidden="true" /> Email</a>
                 </div>
-                <p className="inbox-meta"><a className="inbox-meta-email" href={`mailto:${selected.email}`}>{selected.email}</a></p>
+                <p className="inbox-meta"><a className="inbox-meta-email" href={gmailHref(selected.email)} {...newTab}>{selected.email}</a></p>
 
                 <table className="order-items">
                   <thead><tr><th scope="col">Item</th><th scope="col">Size</th><th scope="col">Qty</th><th scope="col">Price</th></tr></thead>
@@ -3213,8 +3223,7 @@ function MessagesInbox({ messages, status, refresh }) {
   }
 
   const replyHref = (message) => {
-    const subject = encodeURIComponent(`Re: your message to Mind Over Matter (${message.topic})`);
-    return `mailto:${message.email}?subject=${subject}`;
+    return gmailHref(message.email, `Re: your message to Mind Over Matter (${message.topic})`);
   };
 
   return (
@@ -3271,12 +3280,12 @@ function MessagesInbox({ messages, status, refresh }) {
                 <span className="post-tag">{selected.topic}</span>
                 <h3 id="inbox-reader-heading" className="inbox-reader-name">{selected.name}</h3>
                 <p className="inbox-meta">
-                  <a className="inbox-meta-email" href={`mailto:${selected.email}`}>{selected.email}</a>
+                  <a className="inbox-meta-email" href={gmailHref(selected.email)} {...newTab}>{selected.email}</a>
                   <span>{messageDateTime.format(selected.createdAt)}</span>
                 </p>
                 <div className="inbox-body">{selected.message}</div>
                 <div className="dashboard-row-actions inbox-actions">
-                  <a className="button button-primary button-small" href={replyHref(selected)}><EnvelopeSimple size={15} aria-hidden="true" /> Reply by email</a>
+                  <a className="button button-primary button-small" href={replyHref(selected)} {...newTab}><EnvelopeSimple size={15} aria-hidden="true" /> Reply by email</a>
                   <button type="button" className="button button-ghost button-small" onClick={() => markRead(selected, false)}>Mark as unread</button>
                   <DeleteControl onDelete={() => handleDelete(selected)} />
                 </div>
@@ -4015,7 +4024,7 @@ function PrivacyPage() {
             <li>stop using it.</li>
           </ul>
           <p>
-            To make a request, email <a className="article-link" href={`mailto:${contact.email}`}>{contact.email}</a>. If you’re not satisfied with our response, you can complain to the Office of the Data Protection Commissioner (ODPC).
+            To make a request, email <a className="article-link" href={gmailHref(contact.email)} {...newTab}>{contact.email}</a>. If you’re not satisfied with our response, you can complain to the Office of the Data Protection Commissioner (ODPC).
           </p>
 
           <h2>Changes to this policy</h2>
@@ -4068,7 +4077,7 @@ function LoadErrorScreen() {
           <a href="/" className="button button-ghost"><House size={17} aria-hidden="true" /> Home</a>
         </div>
         {!offline && (
-          <a className="text-link error-screen-contact" href={`mailto:${contact.email}?subject=${encodeURIComponent('Problem on the website')}`}>
+          <a className="text-link error-screen-contact" href={gmailHref(contact.email, 'Problem on the website')} {...newTab}>
             Report the problem: {contact.email}
           </a>
         )}
