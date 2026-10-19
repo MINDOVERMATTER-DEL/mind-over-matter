@@ -22,15 +22,36 @@ export const socialLinks = [
   { name: 'WhatsApp', icon: 'whatsapp', url: '' },
 ];
 
-// Reviews on the home page, from members, volunteers, and partners. Only add one with the person's permission.
-// While the list is empty, the home page invites visitors to share their experience instead.
-// Format: { quote: 'What they said.', name: 'First name', role: 'Member, Kenyatta University' }
-// Leave `name` empty to show the review as anonymous; `role` is optional.
-export const reviews = [];
-
-export const reviewInvite = {
-  emailSubject: 'My experience with Mind Over Matter',
-};
+// Reviews on the home page, from our past events and programs. Only add one with the person's permission.
+// Format: { quote: 'What they said.', name: 'First name', role: 'Club member' }. Both `name` and `role` are
+// optional: without a name the card shows the role (or "Anonymous") and a person icon instead of an initial.
+export const reviews = [
+  {
+    quote: 'The whole experience was amazing, I loved every part of it… making new friends, having fun with everyone, and overall having a safe environment to share and learn.',
+    role: 'Club member',
+  },
+  {
+    quote: 'Someone at Mind Over Matter said we need to be a safe space for our friends, and now I’m always checking up on them.',
+  },
+  {
+    quote: 'It’s important to have a close-knit support system that can hold your hand on the tough days, and Mind Over Matter is that community.',
+    name: 'Abby',
+  },
+  {
+    quote: 'What I like about the events is interacting with new people, participating in the games, and having the freedom to share our past experiences that affected our mental health. Being able to speak openly about what we’ve been through, how we’ve overcome it, and how far we’ve come without fear or shame was truly beautiful.',
+  },
+  {
+    quote: 'At the Mental Health Cafe discussion, I learnt the importance of prioritizing my mental health, being kind to myself, and creating a safe space where I can express my feelings without fear of judgment. I also learnt that sharing our experiences can help us heal, and that we don’t have to go through everything alone.',
+  },
+  {
+    quote: 'I felt safe and non-judgmentally heard during the Mental Health Cafe discussion.',
+    name: 'Marenye',
+  },
+  {
+    quote: 'During the Mental Health Cafe I got to share about a difficult time in my life in a space without judgment.',
+    name: 'Marenye',
+  },
+];
 
 // Website credit in the footer. Paste the designer's full LinkedIn profile link into `linkedin`.
 export const siteCredit = {
@@ -107,7 +128,7 @@ export const programs = [
     icon: 'puzzle',
     photos: ['trivia'],
     photoAlt: 'Students taking part in an interactive mental health trivia session at Kenyatta University',
-    text: 'Interactive mental health trivia sessions that bring together playful learning, friendly peer competition, and group dialogue. They break down the barriers around talking about mental health and build a safe, supportive community.',
+    text: 'Interactive mental health trivia sessions that bring together youth for playful learning, friendly peer competition, and group dialogue. They break down the barriers around talking about mental health and build a safe, supportive community.',
   },
   {
     title: 'Ecotherapy',

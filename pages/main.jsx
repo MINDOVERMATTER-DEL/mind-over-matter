@@ -25,7 +25,7 @@ import {
 } from '../data/merch.js';
 import {
   approach, contact, coreValues, funding, homeImpact, impact, mission,
-  objectives, partnerOptions, problems, programs, purpose, quote, reviewInvite, reviews, siteCredit, socialLinks, team, vision, waysToJoin,
+  objectives, partnerOptions, problems, programs, purpose, quote, reviews, siteCredit, socialLinks, team, vision, waysToJoin,
 } from '../data/club.js';
 import faithPhoto from '../assets/images/team/faith-waigi.webp';
 import reaganPhoto from '../assets/images/team/reagan-kirwa.webp';
@@ -1423,7 +1423,7 @@ function EventsPage() {
   const past = events.filter((event) => !isUpcoming(event)).reverse().slice(0, PAST_EVENTS_SHOWN);
   return (
     <PageLayout pageClass="page-main">
-      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and time to breathe." lede="From trivia nights and forest trails, to book clubs and personalized sessions with our in-house mental health professionals, there’s something for everyone." />
+      <PageHero eyebrow="Events & programs" title="Workshops, support circles, and mindful meet ups." lede="From trivia nights and forest trails, to book clubs and personalized sessions with our in-house mental health professionals, there’s something for everyone." />
 
       <section className="section">
         <div className="container">
@@ -3781,48 +3781,45 @@ function MerchPromo() {
   );
 }
 
-// Reviews from members, volunteers, and partners (data/club.js). Until there are any, it invites visitors to share
-// their experience by email instead.
+// Reviews from our past events and programs (data/club.js): speech bubbles pinned up like notes on a board, each in
+// one of five colours, with a tail pointing down to the person. Hidden while there are no reviews.
+const REVIEW_TONES = ['mint', 'sun', 'deep', 'lemon', 'flame'];
+
 function HomeReviewsSection() {
-  const shareHref = `mailto:${contact.email}?subject=${encodeURIComponent(reviewInvite.emailSubject)}`;
+  if (!reviews.length) return null;
   return (
     <section className="section alt-section reviews-section" aria-labelledby="reviews-heading">
       <div className="container">
         <div className="section-heading">
           <p className="eyebrow">Reviews</p>
           <h2 id="reviews-heading">In their words.</h2>
-          <p className="lede">What members, volunteers, and partners say about being part of Mind Over Matter.</p>
+          <p className="lede">Reviews from our past events and programs.</p>
         </div>
 
-        {reviews.length > 0 ? (
-          <>
-            <ul className="reviews-grid">
-              {reviews.map((review) => (
-                <li className="review-card" key={review.quote}>
-                  <Quotes className="review-card-mark" size={30} aria-hidden="true" />
-                  <blockquote className="review-card-quote">{review.quote}</blockquote>
-                  <p className="review-card-author">
-                    <strong className="review-card-name">{review.name || 'Anonymous member'}</strong>
-                    {review.role && <span className="review-card-role">{review.role}</span>}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <div className="approach-actions">
-              <a className="button button-ghost" href={shareHref}><EnvelopeSimple size={17} aria-hidden="true" /> Share your experience</a>
-            </div>
-          </>
-        ) : (
-          <div className="reviews-empty">
-            <span className="reviews-empty-icon" aria-hidden="true"><Quotes size={34} /></span>
-            <div className="reviews-empty-copy">
-              <h3 className="reviews-empty-title">Your story could be the first one here.</h3>
-              <p className="reviews-empty-text">We’re gathering reflections from the students, volunteers, and partners who make this community. If Mind Over Matter has made a difference for you, we’d love to hear about it.</p>
-              <p className="reviews-empty-note">We only share a review with your permission, and you can choose to stay anonymous.</p>
-            </div>
-            <a className="button button-primary" href={shareHref}><EnvelopeSimple size={17} aria-hidden="true" /> Share your experience</a>
-          </div>
-        )}
+        <ul className="reviews-board">
+          {reviews.map((review, index) => {
+            const author = review.name || review.role || 'Anonymous';
+            return (
+              <li className={`review-note is-${REVIEW_TONES[index % REVIEW_TONES.length]}`} key={review.quote}>
+                <figure className="review-note-figure">
+                  <div className="review-bubble">
+                    <Quotes className="review-bubble-mark" size={40} aria-hidden="true" />
+                    <blockquote className="review-bubble-quote">{review.quote}</blockquote>
+                  </div>
+                  <figcaption className="review-author">
+                    <span className="review-avatar" aria-hidden="true">
+                      {review.name ? review.name.trim().charAt(0).toUpperCase() : <User size={20} />}
+                    </span>
+                    <span className="review-author-text">
+                      <strong className="review-author-name">{author}</strong>
+                      {review.name && review.role && <span className="review-author-role">{review.role}</span>}
+                    </span>
+                  </figcaption>
+                </figure>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );
