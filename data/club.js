@@ -41,14 +41,14 @@ export const reviews = [
     quote: 'What I like about the events is interacting with new people, participating in the games, and having the freedom to share our past experiences that affected our mental health. Being able to speak openly about what we’ve been through, how we’ve overcome it, and how far we’ve come without fear or shame was truly beautiful.',
   },
   {
-    quote: 'At the Mental Health Cafe discussion, I learnt the importance of prioritizing my mental health, being kind to myself, and creating a safe space where I can express my feelings without fear of judgment. I also learnt that sharing our experiences can help us heal, and that we don’t have to go through everything alone.',
+    quote: 'At the Mental Health Café discussion, I learnt the importance of prioritizing my mental health, being kind to myself, and creating a safe space where I can express my feelings without fear of judgment. I also learnt that sharing our experiences can help us heal, and that we don’t have to go through everything alone.',
   },
   {
-    quote: 'I felt safe and non-judgmentally heard during the Mental Health Cafe discussion.',
+    quote: 'I felt safe and non-judgmentally heard during the Mental Health Café discussion.',
     name: 'Marenye',
   },
   {
-    quote: 'During the Mental Health Cafe I got to share about a difficult time in my life in a space without judgment.',
+    quote: 'During the Mental Health Café I got to share about a difficult time in my life in a space without judgment.',
     name: 'Marenye',
   },
 ];

@@ -2424,141 +2424,126 @@ input {
   }
 }
 
-/* Home "Reviews": speech bubbles pinned up like notes on a board (masonry columns, so long and short reviews
-   pack together), each slightly tilted and in one of four tones. A tail on each bubble points down to its author.
-   Pointing at a note straightens and lifts it. */
-.reviews-board {
-  columns: 2 22rem;
-  column-gap: 2rem;
-  margin: 0;
+/* Home "Reviews": a horizontal row of matching cards that scrolls (or swipes) sideways and snaps to each card,
+   with previous/next buttons beside the heading. Each card takes one of five soft tones in turn (--tone), used for
+   its top rule, a faint wash behind the text, its quote mark, and the author's avatar. */
+.reviews-controls {
+  display: flex;
+  flex: none;
+  gap: 0.6rem;
+}
+
+.reviews-control {
+  display: grid;
+  width: 2.9rem;
+  aspect-ratio: 1;
+  place-items: center;
   padding: 0;
-  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, opacity 0.25s ease;
 }
 
-/* Each tone is a two-colour gradient; --note-tail is its lower colour, for the bubble's tail. Light tones keep
-   dark text in both themes. */
-.review-note {
-  --note-bg: var(--panel);
-  --note-tail: var(--panel);
-  --note-ink: #0c2620;
-  --note-mark: var(--accent);
-  --note-tilt: -1.2deg;
-
-  /* The top padding leaves room for the quote badge, which sits half above the bubble. */
-  padding: 1.4rem 0 1rem;
-  break-inside: avoid;
-}
-
-.review-note:nth-child(4n + 2) {
-  --note-tilt: 1deg;
-}
-
-.review-note:nth-child(4n + 3) {
-  --note-tilt: 0.6deg;
-}
-
-.review-note:nth-child(4n + 4) {
-  --note-tilt: -0.8deg;
-}
-
-.review-note.is-mint {
-  --note-bg: linear-gradient(150deg, #d2f8e6, #93e3c0);
-  --note-tail: #93e3c0;
-  --note-mark: #0a7a5a;
-}
-
-.review-note.is-sun {
-  --note-bg: linear-gradient(150deg, #ffe0c4, #ffad6e);
-  --note-tail: #ffad6e;
-  --note-mark: #d4520c;
-}
-
-.review-note.is-deep {
-  --note-bg: linear-gradient(150deg, #0b7d5c, #064a37);
-  --note-tail: #064a37;
-  --note-ink: #f5fffa;
-  --note-mark: #ffb27a;
-}
-
-.review-note.is-lemon {
-  --note-bg: linear-gradient(150deg, #fff4c2, #ffd75e);
-  --note-tail: #ffd75e;
-  --note-mark: #c9600f;
-}
-
-.review-note.is-flame {
-  --note-bg: linear-gradient(150deg, #c94b0b, #8f2f06);
-  --note-tail: #8f2f06;
-  --note-ink: #fff;
-  --note-mark: #ffd27a;
-}
-
-.review-note-figure {
+.reviews-track {
+  display: flex;
+  gap: 1.5rem;
   margin: 0;
-  transform: rotate(var(--note-tilt));
-  transition: transform 0.45s var(--ease-spring);
+  padding: 0.25rem 0.25rem 1.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border-radius: 12px;
+  list-style: none;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: rgb(13 122 92 / 35%) transparent;
+  scrollbar-width: thin;
 }
 
-.review-note:hover .review-note-figure {
-  transform: rotate(0deg) translateY(-6px);
+.reviews-control:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-.review-bubble {
-  position: relative;
-  padding: 2.4rem clamp(1.4rem, 3vw, 2rem) 1.6rem;
-  border-radius: 26px 26px 26px 8px;
-  background: var(--note-bg);
-  color: var(--note-ink);
+.reviews-control:focus-visible,
+.reviews-track:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.reviews-control:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--nav-green);
+  color: #fff;
+}
+
+.review-card {
+  --tone: #3f8f75;
+
+  display: flex;
+  flex: 0 0 min(23rem, 85%);
+  scroll-snap-align: start;
+}
+
+.review-card.is-peach {
+  --tone: #b9784b;
+}
+
+.review-card.is-sage {
+  --tone: #637f5e;
+}
+
+.review-card.is-sand {
+  --tone: #9c8447;
+}
+
+.review-card.is-clay {
+  --tone: #a85f50;
+}
+
+.review-card-figure {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 1.6rem 1.6rem 1.4rem;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--tone);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--tone) 8%, var(--panel));
   box-shadow: var(--shadow-soft);
 }
 
-/* The tail: a small rounded triangle under the bubble's bottom-left corner, pointing at the avatar. */
-.review-bubble::after {
-  position: absolute;
-  bottom: -14px;
-  left: 1.6rem;
-  width: 28px;
-  height: 16px;
-  content: "";
-  background: var(--note-tail);
-  clip-path: polygon(0 0, 100% 0, 15% 100%);
+.review-card-mark {
+  margin-bottom: 0.9rem;
+  color: var(--tone);
 }
 
-.review-bubble-mark {
-  position: absolute;
-  top: -1.1rem;
-  left: 1.4rem;
-  padding: 0.35rem;
-  border-radius: 50%;
-  background: var(--note-bg);
-  color: var(--note-mark);
-  box-shadow: 0 6px 14px rgb(4 32 24 / 14%);
-}
-
-.review-bubble-quote {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
-  line-height: 1.6;
+.review-card-quote {
+  flex: 1;
+  margin: 0 0 1.5rem;
+  color: var(--ink);
+  line-height: 1.7;
 }
 
 .review-author {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 1.35rem 0 0 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
 }
 
 .review-avatar {
   display: grid;
   flex: 0 0 auto;
-  width: 2.6rem;
+  width: 2.4rem;
   aspect-ratio: 1;
   place-items: center;
-  border: 2px solid var(--panel);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--nav-green), var(--accent));
-  box-shadow: 0 4px 12px rgb(4 32 24 / 18%);
+  background: var(--tone);
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;
@@ -2573,12 +2558,6 @@ input {
 .review-author-role {
   color: var(--muted);
   font-size: 0.88rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .review-note-figure {
-    transition: none;
-  }
 }
 
 /* Home "Our impact": milestones joined by a wave, matching "Our approach". The icons alternate high and low by

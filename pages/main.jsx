@@ -3781,34 +3781,72 @@ function MerchPromo() {
   );
 }
 
-// Reviews from our past events and programs (data/club.js): speech bubbles pinned up like notes on a board, each in
-// one of five colours, with a tail pointing down to the person. Hidden while there are no reviews.
-const REVIEW_TONES = ['mint', 'sun', 'deep', 'lemon', 'flame'];
+// Reviews from our past events and programs (data/club.js): a horizontal row of matching cards that scrolls (or
+// swipes) sideways, with previous/next buttons. Each card takes one of five soft tones in turn. Hidden while there
+// are no reviews.
+const REVIEW_TONES = ['mint', 'peach', 'sage', 'sand', 'clay'];
 
 function HomeReviewsSection() {
+  const trackRef = useRef(null);
+  const [edges, setEdges] = useState({ atStart: true, atEnd: false });
+
+  // Which ends of the row are showing, so the buttons can be disabled there.
+  const updateEdges = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    setEdges({
+      atStart: track.scrollLeft <= 4,
+      atEnd: track.scrollLeft + track.clientWidth >= track.scrollWidth - 4,
+    });
+  };
+
+  useEffect(() => {
+    updateEdges();
+    window.addEventListener('resize', updateEdges);
+    return () => window.removeEventListener('resize', updateEdges);
+  }, []);
+
+  // Moves the row by one card (its width plus the gap).
+  const scrollByCard = (direction) => {
+    const track = trackRef.current;
+    const card = track?.firstElementChild;
+    if (!card) return;
+    const gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    track.scrollBy({ left: direction * (card.offsetWidth + gap), behavior: smooth ? 'smooth' : 'auto' });
+  };
+
   if (!reviews.length) return null;
   return (
     <section className="section alt-section reviews-section" aria-labelledby="reviews-heading">
       <div className="container">
-        <div className="section-heading">
-          <p className="eyebrow">Reviews</p>
-          <h2 id="reviews-heading">In their words.</h2>
-          <p className="lede">Reviews from our past events and programs.</p>
+        <div className="section-heading split-heading reviews-heading">
+          <div>
+            <p className="eyebrow">Reviews</p>
+            <h2 id="reviews-heading">In their words.</h2>
+            <p className="lede">Reviews from our past events and programs.</p>
+          </div>
+          <div className="reviews-controls">
+            <button type="button" className="reviews-control" onClick={() => scrollByCard(-1)} disabled={edges.atStart} aria-label="Previous reviews">
+              <ArrowLeft size={20} aria-hidden="true" />
+            </button>
+            <button type="button" className="reviews-control" onClick={() => scrollByCard(1)} disabled={edges.atEnd} aria-label="Next reviews">
+              <ArrowRight size={20} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
-        <ul className="reviews-board">
+        <ul className="reviews-track" ref={trackRef} onScroll={updateEdges} tabIndex={0} aria-label="Reviews">
           {reviews.map((review, index) => {
             const author = review.name || review.role || 'Anonymous';
             return (
-              <li className={`review-note is-${REVIEW_TONES[index % REVIEW_TONES.length]}`} key={review.quote}>
-                <figure className="review-note-figure">
-                  <div className="review-bubble">
-                    <Quotes className="review-bubble-mark" size={40} aria-hidden="true" />
-                    <blockquote className="review-bubble-quote">{review.quote}</blockquote>
-                  </div>
+              <li className={`review-card is-${REVIEW_TONES[index % REVIEW_TONES.length]}`} key={review.quote}>
+                <figure className="review-card-figure">
+                  <Quotes className="review-card-mark" size={30} aria-hidden="true" />
+                  <blockquote className="review-card-quote">{review.quote}</blockquote>
                   <figcaption className="review-author">
                     <span className="review-avatar" aria-hidden="true">
-                      {review.name ? review.name.trim().charAt(0).toUpperCase() : <User size={20} />}
+                      {review.name ? review.name.trim().charAt(0).toUpperCase() : <User size={18} />}
                     </span>
                     <span className="review-author-text">
                       <strong className="review-author-name">{author}</strong>
