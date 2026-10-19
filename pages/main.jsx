@@ -802,8 +802,8 @@ function HomePage() {
           className="hero-photo-bg"
           src={homeHeroPhoto}
           alt=""
-          width="1440"
-          height="960"
+          width="1600"
+          height="808"
           fetchPriority="high"
           initial={{ scale: 1.08 }}
           animate={{ scale: 1 }}
