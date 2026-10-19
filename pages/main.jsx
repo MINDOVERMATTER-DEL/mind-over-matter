@@ -3846,7 +3846,8 @@ function HomeReviewsSection() {
         </div>
 
         <ul className="reviews-track" ref={trackRef} onScroll={updateEdges} tabIndex={0} aria-label="Reviews">
-          {reviews.map((review, index) => {
+          {/* Named reviews first, then anonymous ones, each group in the order listed in data/club.js. */}
+          {[...reviews.filter((review) => review.name), ...reviews.filter((review) => !review.name)].map((review, index) => {
             const author = review.name || review.role || 'Anonymous';
             return (
               <li className={`review-card is-${REVIEW_TONES[index % REVIEW_TONES.length]}`} key={review.quote}>
