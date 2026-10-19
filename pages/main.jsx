@@ -797,7 +797,7 @@ function HomePage() {
   return (
     <PageLayout>
       <section className="hero hero-photo">
-        {/* A club group photo fills the hero, under a green wash that keeps the text readable. */}
+        {/* The club group photo fills the hero, under a green wash that keeps the text readable. */}
         <motion.img
           className="hero-photo-bg"
           src={homeHeroPhoto}
@@ -812,7 +812,7 @@ function HomePage() {
         <div className="container hero-grid">
           <motion.div className="hero-copy" initial="hidden" animate="shown" variants={introVariants}>
             <motion.p className="eyebrow" variants={introItemVariants}>Students across Kenya · Mental health</motion.p>
-            <motion.h1 className="hero-photo-title" variants={introItemVariants}>A community where mental health matters.</motion.h1>
+            <motion.h1 variants={introItemVariants}>A community where mental health matters.</motion.h1>
             <motion.p className="lede hero-lede" variants={introItemVariants}>Mind Over Matter is a student-led, youth-driven organisation building a compassionate, supportive community where mental health is openly discussed, actively nurtured, and never faced alone.</motion.p>
             <motion.div className="hero-actions" variants={introItemVariants}>
               <a href="/about-us#get-involved" className="button button-primary hero-button">Join the club <ArrowRight size={16} aria-hidden="true" /></a>
