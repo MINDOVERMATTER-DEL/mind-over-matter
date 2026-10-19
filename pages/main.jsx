@@ -803,7 +803,7 @@ function HomePage() {
           src={homeHeroPhoto}
           alt=""
           width="1600"
-          height="808"
+          height="679"
           fetchPriority="high"
           initial={{ scale: 1.08 }}
           animate={{ scale: 1 }}
