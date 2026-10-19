@@ -2098,14 +2098,16 @@ input {
   --accent-deep: #8ee6c4;
 }
 
-.hero-photo::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(90deg, rgb(4 28 22 / 80%) 0%, rgb(4 28 22 / 55%) 42%, rgb(4 28 22 / 8%) 100%),
-    linear-gradient(0deg, rgb(4 28 22 / 45%) 0%, transparent 30%);
+/* No dark wash over the photo, so it shows at full brightness; a soft dark shadow around the text keeps it
+   readable instead. The heading's letters can be cut out of a gradient (the shine animation), where a
+   text-shadow would show through them, so it uses a drop-shadow filter. */
+.hero-photo .hero-copy {
+  text-shadow: 0 1px 3px rgb(3 28 22 / 65%), 0 2px 16px rgb(3 28 22 / 70%);
+}
+
+.hero-photo-title {
+  text-shadow: none;
+  filter: drop-shadow(0 1px 2px rgb(3 28 22 / 60%)) drop-shadow(0 4px 14px rgb(3 28 22 / 65%));
 }
 
 .hero-photo + .section {
@@ -6320,10 +6322,6 @@ input {
   .hero-photo {
     padding-top: calc(76px + 2rem);
     padding-bottom: 6rem;
-  }
-
-  .hero-photo::before {
-    background: linear-gradient(0deg, rgb(4 28 22 / 88%) 0%, rgb(4 28 22 / 66%) 55%, rgb(4 28 22 / 38%) 100%);
   }
 
   .hero-copy h1 {
