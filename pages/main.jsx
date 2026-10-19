@@ -33,11 +33,12 @@ import rogersPhoto from '../assets/images/team/rogers-kuria.webp';
 import krystalPhoto from '../assets/images/team/krystal-karan.webp';
 import jamesPhoto from '../assets/images/team/james-mvoi.webp';
 import clubGroupPhoto from '../assets/images/community/club-group.webp';
+import homeHeroPhoto from '../assets/images/community/home-hero.webp';
 import supportSessionPhoto from '../assets/images/community/support-session.webp';
 import togetherPhoto from '../assets/images/community/together.webp';
 import triviaPhoto from '../assets/images/programs/trivia-thursdays.webp';
 import ecotherapyForestPhoto from '../assets/images/programs/ecotherapy-forest.webp';
-import ecotherapyCavePhoto from '../assets/images/programs/ecotherapy-cave.webp';
+import ecotherapyStretchingPhoto from '../assets/images/programs/ecotherapy-stretching.webp';
 import safeSpacesPhoto from '../assets/images/programs/safe-spaces.webp';
 import bookClubPhoto from '../assets/images/programs/book-club.webp';
 import bookClubLibraryPhoto from '../assets/images/programs/book-club-library.webp';
@@ -89,7 +90,7 @@ const icons = {
 const programPhotos = {
   trivia: triviaPhoto,
   ecotherapyForest: ecotherapyForestPhoto,
-  ecotherapyCave: ecotherapyCavePhoto,
+  ecotherapyStretching: ecotherapyStretchingPhoto,
   safeSpaces: safeSpacesPhoto,
   bookClub: bookClubPhoto,
   bookClubLibrary: bookClubLibraryPhoto,
@@ -796,12 +797,12 @@ function HomePage() {
   return (
     <PageLayout>
       <section className="hero hero-photo">
-        {/* The club group photo fills the hero, under a green wash that keeps the text readable. */}
+        {/* A club group photo fills the hero, under a green wash that keeps the text readable. */}
         <motion.img
           className="hero-photo-bg"
-          src={clubGroupPhoto}
+          src={homeHeroPhoto}
           alt=""
-          width="1280"
+          width="1440"
           height="960"
           fetchPriority="high"
           initial={{ scale: 1.08 }}

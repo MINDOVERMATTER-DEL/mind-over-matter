@@ -130,7 +130,7 @@ export const programs = [
     title: 'Ecotherapy',
     kicker: 'Healing in nature',
     icon: 'tree',
-    photos: ['ecotherapyForest', 'ecotherapyCave'],
+    photos: ['ecotherapyForest', 'ecotherapyStretching'],
     photoAlt: 'Club members standing together among green trees on an ecotherapy outing',
     text: 'By stepping into natural spaces, we encourage young people to disconnect from academic pressure, practise active coping, and strengthen their resilience together.',
   },

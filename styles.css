@@ -2104,8 +2104,8 @@ input {
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(90deg, rgb(4 28 22 / 90%) 0%, rgb(4 28 22 / 72%) 42%, rgb(4 28 22 / 22%) 100%),
-    linear-gradient(0deg, rgb(4 28 22 / 55%) 0%, transparent 35%);
+    linear-gradient(90deg, rgb(4 28 22 / 80%) 0%, rgb(4 28 22 / 55%) 42%, rgb(4 28 22 / 8%) 100%),
+    linear-gradient(0deg, rgb(4 28 22 / 45%) 0%, transparent 30%);
 }
 
 .hero-photo + .section {
@@ -2120,6 +2120,7 @@ input {
   height: 100%;
   object-fit: cover;
   object-position: center 70%;
+  filter: brightness(1.08) saturate(1.05);
 }
 
 .hero-photo .hero-grid {
@@ -6322,7 +6323,7 @@ input {
   }
 
   .hero-photo::before {
-    background: linear-gradient(0deg, rgb(4 28 22 / 92%) 0%, rgb(4 28 22 / 78%) 55%, rgb(4 28 22 / 55%) 100%);
+    background: linear-gradient(0deg, rgb(4 28 22 / 88%) 0%, rgb(4 28 22 / 66%) 55%, rgb(4 28 22 / 38%) 100%);
   }
 
   .hero-copy h1 {
