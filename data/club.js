@@ -44,7 +44,7 @@ export const reviews = [
     quote: 'At the Mental Health Café discussion, I learnt the importance of prioritizing my mental health, being kind to myself, and creating a safe space where I can express my feelings without fear of judgment. I also learnt that sharing our experiences can help us heal, and that we don’t have to go through everything alone.',
   },
   {
-    quote: 'During the Mental Health Café, I got to share about a difficult time in my life in a space without judgment. I felt safe and non-judgmentally heard.',
+    quote: 'During the Mental Health Café discussion, I felt safe and non-judgmentally heard while sharing about a difficult time in my life.',
     name: 'Marenye',
   },
 ];
