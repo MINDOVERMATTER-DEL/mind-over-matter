@@ -2105,6 +2105,10 @@ input {
   text-shadow: 0 1px 3px rgb(3 28 22 / 65%), 0 2px 16px rgb(3 28 22 / 70%);
 }
 
+.hero-photo .hero-lede {
+  color: #fff;
+}
+
 .hero-photo-title {
   text-shadow: none;
   filter: drop-shadow(0 1px 2px rgb(3 28 22 / 60%)) drop-shadow(0 4px 14px rgb(3 28 22 / 65%));
@@ -2122,7 +2126,7 @@ input {
   height: 100%;
   object-fit: cover;
   object-position: center 70%;
-  filter: brightness(1.08) saturate(1.05);
+  filter: brightness(1.12) saturate(1.25) contrast(1.04);
 }
 
 .hero-photo .hero-grid {
